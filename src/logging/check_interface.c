@@ -15,8 +15,8 @@ int check_interface(const char fname[], const domain_t *domain, const double tim
   const MPI_Comm comm_cart = domain->sdecomp->comm_cart;
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-  const double dx = domain->dx;
-  const double dy = domain->dy;
+  const double *dxf = domain->dxf;
+  const double dy   = domain->dy;
   const double *vof = interface->vof;
   double min = DBL_MAX;
   double max = DBL_MIN;
@@ -25,7 +25,7 @@ int check_interface(const char fname[], const domain_t *domain, const double tim
     for(int i = 1; i <= isize; i++){
       min = fmin(min, VOF(i, j));
       max = fmax(max, VOF(i, j));
-      sum += VOF(i, j)*dx*dy;
+      sum += VOF(i, j)*DXF(i)*dy;
     }
   }
   MPI_Allreduce(MPI_IN_PLACE, &min, 1, MPI_DOUBLE, MPI_MIN, comm_cart);
@@ -50,9 +50,9 @@ int check_interface(const char fname[], const domain_t *domain, const double tim
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  const double dx = domain->dx;
-  const double dy = domain->dy;
-  const double dz = domain->dz;
+  const double *dxf = domain->dxf;
+  const double dy   = domain->dy;
+  const double dz   = domain->dz;
   const double *vof = interface->vof;
   double min = DBL_MAX;
   double max = DBL_MIN;
@@ -62,7 +62,7 @@ int check_interface(const char fname[], const domain_t *domain, const double tim
       for(int i = 1; i <= isize; i++){
         min = fmin(min, VOF(i, j, k));
         max = fmax(max, VOF(i, j, k));
-        sum += VOF(i, j, k)*dx*dy*dz;
+        sum += VOF(i, j, k)*DXF(i)*dy*dz;
       }
     }
   }

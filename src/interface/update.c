@@ -19,9 +19,9 @@ static int interface_compute_flux_x(const domain_t *domain, const fluid_t *fluid
   const double * restrict vof = interface->vof;
   const nrml_t * restrict normal = interface->normal;
   double * restrict voffluxx = interface->voffluxx;
-  memset(voffluxx, 0, VOFFLUXX_SIZE_0 * VOFFLUXX_SIZE_1 * sizeof(double));
   for(int j = 1; j <= jsize; j++){
     for(int i = 2; i <= isize; i++){
+      /* ! use upwind information ! 9 ! */
       int ii;
       double x;
       if(UX(i, j) < 0.){
@@ -31,19 +31,19 @@ static int interface_compute_flux_x(const domain_t *domain, const fluid_t *fluid
         ii = i-1;
         x = +0.5;
       }
+      /* ! evaluate flux ! 12 ! */
+      double flux = 0.;
       if(VOF(ii, j) < VOFMIN || 1.-VOFMIN < VOF(ii, j)){
-        VOFFLUXX(i, j) = VOF(ii, j);
+        flux = VOF(ii, j);
       }else{
         double a10 = NORMAL(ii, j).a10;
         double a01 = NORMAL(ii, j).a01;
         double a00 = NORMAL(ii, j).a00;
-        for(int ng = 0; ng < ORDER_GAUSS; ng++){
-          double gw = gws[ng];
-          double gy = gps[ng];
-          VOFFLUXX(i, j) += gw*H(a00, a10, a01, x, gy);
+        for(int jj = 0; jj < ORDER_GAUSS; jj++){
+          flux += gws[jj] * H(a00, a10, a01, x, gps[jj]);
         }
       }
-      VOFFLUXX(i, j) *= UX(i, j);
+      VOFFLUXX(i, j) = flux * UX(i, j);
     }
   }
   return 0;
@@ -58,9 +58,9 @@ static int interface_compute_flux_y(const domain_t *domain, const fluid_t *fluid
   const double * restrict vof = interface->vof;
   const nrml_t * restrict normal = interface->normal;
   double * restrict voffluxy = interface->voffluxy;
-  memset(voffluxy, 0, VOFFLUXY_SIZE_0 * VOFFLUXY_SIZE_1 * sizeof(double));
   for(int j = 1; j <= jsize+1; j++){
     for(int i = 1; i <= isize; i++){
+      /* ! use upwind information ! 9 ! */
       int jj;
       double y;
       if(UY(i, j) < 0.){
@@ -70,19 +70,19 @@ static int interface_compute_flux_y(const domain_t *domain, const fluid_t *fluid
         jj = j-1;
         y = +0.5;
       }
+      /* ! evaluate flux ! 12 ! */
+      double flux = 0.;
       if(VOF(i, jj) < VOFMIN || 1.-VOFMIN < VOF(i, jj)){
-        VOFFLUXY(i, j) = VOF(i, jj);
+        flux = VOF(i, jj);
       }else{
         double a10 = NORMAL(i, jj).a10;
         double a01 = NORMAL(i, jj).a01;
         double a00 = NORMAL(i, jj).a00;
-        for(int ng = 0; ng < ORDER_GAUSS; ng++){
-          double gw = gws[ng];
-          double gx = gps[ng];
-          VOFFLUXY(i, j) += gw*H(a00, a10, a01, gx, y);
+        for(int ii = 0; ii < ORDER_GAUSS; ii++){
+          flux += gws[ii] * H(a00, a10, a01, gps[ii], y);
         }
       }
-      VOFFLUXY(i, j) *= UY(i, j);
+      VOFFLUXY(i, j) = flux * UY(i, j);
     }
   }
   return 0;
@@ -91,17 +91,18 @@ static int interface_compute_flux_y(const domain_t *domain, const fluid_t *fluid
 static int interface_compute_rhs(const domain_t *domain, interface_t *interface){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-  const double dx = domain->dx;
-  const double dy = domain->dy;
+  const double * restrict dxf = domain->dxf;
+  const double            dy  = domain->dy;
   const double * restrict voffluxx = interface->voffluxx;
   const double * restrict voffluxy = interface->voffluxy;
   double * restrict vofsrca = interface->vofsrca;
   double * restrict vofsrcb = interface->vofsrcb;
   memcpy(vofsrcb, vofsrca, VOFSRCA_SIZE_0 * VOFSRCA_SIZE_1 * sizeof(double));
+  /* ! compute right-hand-side of advection equation ! 8 ! */
   for(int j = 1; j <= jsize; j++){
     for(int i = 1; i <= isize; i++){
       VOFSRCA(i, j) =
-        -(-VOFFLUXX(i, j)+VOFFLUXX(i+1, j  ))/dx
+        -(-VOFFLUXX(i, j)+VOFFLUXX(i+1, j  ))/DXF(i)
         -(-VOFFLUXY(i, j)+VOFFLUXY(i  , j+1))/dy
       ;
     }
@@ -144,6 +145,7 @@ static int interface_compute_flux_x(const domain_t *domain, const fluid_t *fluid
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 2; i <= isize; i++){
+        /* ! use upwind information ! 9 ! */
         int ii;
         double x;
         if(UX(i, j, k) < 0.){
@@ -153,6 +155,7 @@ static int interface_compute_flux_x(const domain_t *domain, const fluid_t *fluid
           ii = i-1;
           x = +0.5;
         }
+        /* ! evaluate flux ! 15 ! */
         double flux = 0.;
         if(VOF(ii, j, k) < VOFMIN || 1.-VOFMIN < VOF(ii, j, k)){
           flux = VOF(ii, j, k);
@@ -187,6 +190,7 @@ static int interface_compute_flux_y(const domain_t *domain, const fluid_t *fluid
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize+1; j++){
       for(int i = 1; i <= isize; i++){
+        /* ! use upwind information ! 9 ! */
         int jj;
         double y;
         if(UY(i, j, k) < 0.){
@@ -196,6 +200,7 @@ static int interface_compute_flux_y(const domain_t *domain, const fluid_t *fluid
           jj = j-1;
           y = +0.5;
         }
+        /* ! evaluate flux ! 15 ! */
         double flux = 0.;
         if(VOF(i, jj, k) < VOFMIN || 1.-VOFMIN < VOF(i, jj, k)){
           flux = VOF(i, jj, k);
@@ -230,6 +235,7 @@ static int interface_compute_flux_z(const domain_t *domain, const fluid_t *fluid
   for(int k = 1; k <= ksize+1; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
+        /* ! use upwind information ! 9 ! */
         int kk;
         double z;
         if(UZ(i, j, k) < 0.){
@@ -239,6 +245,7 @@ static int interface_compute_flux_z(const domain_t *domain, const fluid_t *fluid
           kk = k-1;
           z = +0.5;
         }
+        /* ! evaluate flux ! 15 ! */
         double flux = 0.;
         if(VOF(i, j, kk) < VOFMIN || 1.-VOFMIN < VOF(i, j, kk)){
           flux = VOF(i, j, kk);
@@ -264,20 +271,21 @@ static int interface_compute_rhs(const domain_t *domain, interface_t *interface)
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  const double dx = domain->dx;
-  const double dy = domain->dy;
-  const double dz = domain->dz;
+  const double * restrict dxf = domain->dxf;
+  const double            dy  = domain->dy;
+  const double            dz  = domain->dz;
   const double * restrict voffluxx = interface->voffluxx;
   const double * restrict voffluxy = interface->voffluxy;
   const double * restrict voffluxz = interface->voffluxz;
   double * restrict vofsrca = interface->vofsrca;
   double * restrict vofsrcb = interface->vofsrcb;
   memcpy(vofsrcb, vofsrca, VOFSRCA_SIZE_0 * VOFSRCA_SIZE_1 * VOFSRCA_SIZE_2 * sizeof(double));
+  /* ! compute right-hand-side of advection equation ! 11 ! */
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
         VOFSRCA(i, j, k) =
-          -(-VOFFLUXX(i, j, k)+VOFFLUXX(i+1, j  , k  ))/dx
+          -(-VOFFLUXX(i, j, k)+VOFFLUXX(i+1, j  , k  ))/DXF(i)
           -(-VOFFLUXY(i, j, k)+VOFFLUXY(i  , j+1, k  ))/dy
           -(-VOFFLUXZ(i, j, k)+VOFFLUXZ(i  , j  , k+1))/dz
         ;

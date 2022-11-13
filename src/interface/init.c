@@ -35,16 +35,15 @@ static interface_t *allocate(const domain_t *domain){
 static int init(const domain_t *domain, interface_t *interface){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-  const int ioffs = domain->offsets[0];
   const int joffs = domain->offsets[1];
   const double lx = domain->lengths[0];
   const double ly = domain->lengths[1];
-  const double dx = domain->dx;
+  const double *xc = domain->xc;
+  const double *dxf = domain->dxf;
   const double dy = domain->dy;
   const double cx = 0.50*lx;
   const double cy = 0.50*ly;
-  const double delta = fmin(dx, dy);
-  double xoffs = dx * ioffs;
+  const double delta = dy;
   double yoffs = dy * joffs;
   double *vof = interface->vof;
   double *g_gps = NULL;
@@ -67,13 +66,14 @@ static int init(const domain_t *domain, interface_t *interface){
     // compute local gaussian quadrature with interval [y-0.5*dy, y+0.5*dy]
     convert_gaussian_quadrature(ORDER_GAUSS, y0-0.5*dy, y0+0.5*dy, g_gps, g_gws, l_gps_y, l_gws_y);
     for(int i = 1; i <= isize; i++){
-      double x0 = 0.5*(2*i-1)*dx+xoffs;
+      double x0 = XC(i);
+      double dx = DXF(i);
       // compute local gaussian quadrature with interval [x-0.5*dx, x+0.5*dx]
       convert_gaussian_quadrature(ORDER_GAUSS, x0-0.5*dx, x0+0.5*dx, g_gps, g_gws, l_gps_x, l_gws_x);
       // integrate H(distance) to determine VOF value
       for(int jj=0; jj<ORDER_GAUSS; jj++){
         for(int ii=0; ii<ORDER_GAUSS; ii++){
-          double dist = l_gps_y[jj]-cy;
+          double dist = 0.25-sqrt(pow(l_gps_x[ii]-cx, 2.)+pow(l_gps_y[jj]-cy, 2.));
           VOF(i, j) +=
             l_gws_x[ii]*l_gws_y[jj]
             *0.5*(1.+tanh(VOFBETA*dist/delta))
@@ -131,18 +131,18 @@ static interface_t *allocate(const domain_t *domain){
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
   interface_t *interface = common_calloc(1, sizeof(interface_t));
-  interface->vof      = common_calloc(VOF_SIZE_0      * VOF_SIZE_1     * VOF_SIZE_2     , sizeof(double));
-  interface->dvof     = common_calloc(DVOF_SIZE_0     * DVOF_SIZE_1    * DVOF_SIZE_2    , sizeof(dvof_t));
-  interface->normal   = common_calloc(NORMAL_SIZE_0   * NORMAL_SIZE_1  * NORMAL_SIZE_2  , sizeof(nrml_t));
-  interface->curv     = common_calloc(CURV_SIZE_0     * CURV_SIZE_1    * CURV_SIZE_2    , sizeof(double));
-  interface->voffluxx = common_calloc(VOFFLUXX_SIZE_0 * VOFFLUXX_SIZE_1* VOFFLUXX_SIZE_2, sizeof(double));
-  interface->voffluxy = common_calloc(VOFFLUXY_SIZE_0 * VOFFLUXY_SIZE_1* VOFFLUXY_SIZE_2, sizeof(double));
-  interface->voffluxz = common_calloc(VOFFLUXZ_SIZE_0 * VOFFLUXZ_SIZE_1* VOFFLUXZ_SIZE_2, sizeof(double));
-  interface->voffrcx  = common_calloc(VOFFRCX_SIZE_0  * VOFFRCX_SIZE_1 * VOFFRCX_SIZE_2 , sizeof(double));
-  interface->voffrcy  = common_calloc(VOFFRCY_SIZE_0  * VOFFRCY_SIZE_1 * VOFFRCY_SIZE_2 , sizeof(double));
-  interface->voffrcz  = common_calloc(VOFFRCZ_SIZE_0  * VOFFRCZ_SIZE_1 * VOFFRCZ_SIZE_2 , sizeof(double));
-  interface->vofsrca  = common_calloc(VOFSRCA_SIZE_0  * VOFSRCA_SIZE_1 * VOFSRCA_SIZE_2 , sizeof(double));
-  interface->vofsrcb  = common_calloc(VOFSRCB_SIZE_0  * VOFSRCB_SIZE_1 * VOFSRCB_SIZE_2 , sizeof(double));
+  interface->vof      = common_calloc(VOF_SIZE_0      * VOF_SIZE_1      * VOF_SIZE_2     , sizeof(double));
+  interface->dvof     = common_calloc(DVOF_SIZE_0     * DVOF_SIZE_1     * DVOF_SIZE_2    , sizeof(dvof_t));
+  interface->normal   = common_calloc(NORMAL_SIZE_0   * NORMAL_SIZE_1   * NORMAL_SIZE_2  , sizeof(nrml_t));
+  interface->curv     = common_calloc(CURV_SIZE_0     * CURV_SIZE_1     * CURV_SIZE_2    , sizeof(double));
+  interface->voffluxx = common_calloc(VOFFLUXX_SIZE_0 * VOFFLUXX_SIZE_1 * VOFFLUXX_SIZE_2, sizeof(double));
+  interface->voffluxy = common_calloc(VOFFLUXY_SIZE_0 * VOFFLUXY_SIZE_1 * VOFFLUXY_SIZE_2, sizeof(double));
+  interface->voffluxz = common_calloc(VOFFLUXZ_SIZE_0 * VOFFLUXZ_SIZE_1 * VOFFLUXZ_SIZE_2, sizeof(double));
+  interface->voffrcx  = common_calloc(VOFFRCX_SIZE_0  * VOFFRCX_SIZE_1  * VOFFRCX_SIZE_2 , sizeof(double));
+  interface->voffrcy  = common_calloc(VOFFRCY_SIZE_0  * VOFFRCY_SIZE_1  * VOFFRCY_SIZE_2 , sizeof(double));
+  interface->voffrcz  = common_calloc(VOFFRCZ_SIZE_0  * VOFFRCZ_SIZE_1  * VOFFRCZ_SIZE_2 , sizeof(double));
+  interface->vofsrca  = common_calloc(VOFSRCA_SIZE_0  * VOFSRCA_SIZE_1  * VOFSRCA_SIZE_2 , sizeof(double));
+  interface->vofsrcb  = common_calloc(VOFSRCB_SIZE_0  * VOFSRCB_SIZE_1  * VOFSRCB_SIZE_2 , sizeof(double));
   interface->gps      = common_calloc(ORDER_GAUSS, sizeof(double));
   interface->gws      = common_calloc(ORDER_GAUSS, sizeof(double));
   return interface;
