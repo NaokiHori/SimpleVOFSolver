@@ -70,7 +70,7 @@ So the question is how to describe the second term numerically.
 In particular, I need to explicitly describe :math:`H` so that I can integrate it numerically.
 To do so, here I adopt the THINC scheme.
 
-I feel like explaining the numerics with their implementations would be easy to follow.
+I think it is easy to follow if I explain the numerics and their implementations at the same time.
 Please find the following stuffs for details.
 
 .. toctree::
@@ -79,4 +79,5 @@ Please find the following stuffs for details.
    normal
    intercept
    flux
+   force
 

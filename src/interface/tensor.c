@@ -139,6 +139,7 @@ static int compute_curvature(const domain_t *domain, interface_t *interface){
   double * restrict curv = interface->curv;
   for(int j = 0; j <= jsize+1; j++){
     for(int i = 1; i <= isize; i++){
+      /* ! compute mean curvature from corner normals ! 9 ! */
       double dnxdx = 0.5/DXF(i)*(
           - DVOF(i  , j  ).x + DVOF(i+1, j  ).x
           - DVOF(i  , j+1).x + DVOF(i+1, j+1).x
@@ -331,6 +332,7 @@ static int compute_curvature(const domain_t *domain, interface_t *interface){
   for(int k = 0; k <= ksize+1; k++){
     for(int j = 0; j <= jsize+1; j++){
       for(int i = 1; i <= isize; i++){
+        /* ! compute mean curvature from corner normals ! 19 ! */
         double dnxdx = 0.25/DXF(i)*(
             - DVOF(i  , j  , k  ).x + DVOF(i+1, j  , k  ).x
             - DVOF(i  , j+1, k  ).x + DVOF(i+1, j+1, k  ).x
