@@ -10,3 +10,4 @@ Simple VOF Solver
 
    governing_equations
    numerical_method/index
+   references

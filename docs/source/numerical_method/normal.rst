@@ -1,28 +1,21 @@
 
 .. _normal:
 
+.. include:: /references.txt
+
 ##############
 Surface normal
 ##############
 
 I assume that I know the profile of :math:`\phi` at :math:`n` step:
 
-+---+---+---+---+
-|   |i-1| i |i+1|
-+---+---+---+---+
-|j+1|0.1|0.2|0.3|
-+---+---+---+---+
-| j |0.2|0.4|0.6|
-+---+---+---+---+
-|j-1|0.4|0.7|1.0|
-+---+---+---+---+
+.. image:: images/normal0.png
+   :width: 100%
 
-Here this ugly table denotes the profile of :math:`\phi`, where e.g., the left-top, center, left-bottom value represents :math:`\phi_{i-1, j+1}`, :math:`\phi_{i, j}`, and :math:`\phi_{i-1, j-1}`, respectively.
-
-Note that the right-bottom cell is fully occupied by one phase, while other cells are *shared* by the two phases.
+Note that the left-bottom and right-top cells are fully occupied by one of the two phases, while other cells are *shared* by the two phases.
 
 Interface reconstruction starts by computing the local surface normal.
-So a tentative goal here is know the local normal vector :math:`n_{\pic,\pjc}`.
+So a tentative goal here is know the local normal vector :math:`n_{\pic,\pjc}` at each cell center.
 Note that I need to evaluate it from the surrounding discrete :math:`\phi` values.
 
 There are lots of possibilities, and each way has different accuracy and computational expense.
@@ -42,19 +35,19 @@ where :math:`m_i` is the local gradient approximated as
    \approx
    \der{\phi}{x_i}.
 
-To compute this quantity at the cell center :math:`\left( \pic, \pjc \right)`, one of the simplest way is to use second-order accurate central difference:
+To compute this quantity at the cell center :math:`\left( \pic, \pjc \right)`, one of the simplest ways would be to use second-order accurate central-difference scheme:
 
 .. math::
 
    \der{\phi}{x} \approx \frac{\phi_{\pipp, \pjc} - \phi_{\pimm, \pjc}}{2 \Delta x},
 
-which tends to be unstable since this does not use :math:`\phi_{\pic, \pjc}` (i.e., not central-diminant).
+which tends to be unstable since this does not use :math:`\phi_{\pic, \pjc}` (i.e., not central-dominant).
 
-Instead I adopt Youngs approach (TODO: ref):
+Instead I adopt Youngs approach (|YOUNGS1982|):
 
 #. Compute gradients at cell corners
 
-   I use 4 (or 9 in 3D) surrounding cells to compute gradients at cell corners.
+   I use 4 (or 9 in 3D) surrounding cells to compute gradients at cell corners, i.e.,
 
    Gradients in :math:`x`:
 
@@ -95,6 +88,13 @@ Instead I adopt Youngs approach (TODO: ref):
       :language: c
       :tag: normalise and obtain corner normals
 
+   .. image:: images/normal1.png
+      :width: 100%
+
+   .. note::
+
+      In this image, lengths of arrows are adjusted for the sake of appearances and thus may be inaccurate.
+
 #. Compute normals at cell centers
 
    Normals at cell centers are computed by averaging the normal of the surrouding cell corners:
@@ -111,11 +111,20 @@ Instead I adopt Youngs approach (TODO: ref):
       :language: c
       :tag: average nz
 
-   Since averaging operations might break the unitary nature, I normalise them again here.
+   Notice that, because of the averaging, the norm of this central vector might not be unity.
 
-   These normal vectors are defined on the *global* coordinate system (physical coordinate system), whose basis is :math:`\left( \underline{e}_x, \underline{e}_y \right)`.
-   Later on, it is convenient to consider thing on *local* coordinate system, which is a coordinate system attached to the cell :math:`\left( i, j \right)`, whose basis is :math:`\left( \underline{e}_{X}, \underline{e}_{Y} \right)`.
-   These two coordinate systems are tied with
+   .. image:: images/normal2.png
+      :width: 100%
+
+   .. note::
+
+      In this image, lengths of arrows are adjusted for the sake of appearances and thus may be inaccurate.
+
+#. Coordinate transformation
+
+   These normal vectors at cell centers are defined on the *global* coordinate system (e.g., coordinate system used to describe domain), whose basis is :math:`\left( \underline{e}_x, \underline{e}_y \right)`.
+   Later on, it is convenient to consider thing on *local* coordinate system, which is a coordinate system attached to each cell :math:`\left( i, j \right)`, whose basis is :math:`\left( \underline{e}_{X}, \underline{e}_{Y} \right)`.
+   These two coordinate systems are tied with the relation:
 
    .. math::
 
@@ -133,7 +142,7 @@ Instead I adopt Youngs approach (TODO: ref):
          \underline{e}_y
       \end{pmatrix},
 
-   or equivalently
+   or apparently
 
    .. math::
 
@@ -151,7 +160,14 @@ Instead I adopt Youngs approach (TODO: ref):
          \underline{e}_Y
       \end{pmatrix}.
 
-   Based on these relation, the above normal vector attached to the *global* coordinate system
+   .. image:: images/normal3.png
+      :width: 100%
+
+   .. note::
+
+      In this image, lengths of arrows are adjusted for the sake of appearances and thus may be inaccurate.
+
+   Based on these formula, the above normal vector attached to the *global* coordinate system
 
    .. math::
 
@@ -167,10 +183,11 @@ Instead I adopt Youngs approach (TODO: ref):
 
       \underline{e}_X \frac{1}{\Delta x_i} n_x
       +
-      \underline{e}_Y \frac{1}{\Delta y  } n_y.
+      \underline{e}_Y \frac{1}{\Delta y  } n_y
 
    on the *local* coordinate system.
-   Thus I can conclude that the surface normal on the local coordinate system
+
+   Obviously the length of this vector is not unity, which should be rescaled so that it is normalised with respect to the *local* coordinate system:
 
    .. math::
 
@@ -178,9 +195,9 @@ Instead I adopt Youngs approach (TODO: ref):
       \equiv
       \underline{e}_X n_X
       +
-      \underline{e}_Y n_Y
+      \underline{e}_Y n_Y,
 
-   leads
+   which is
 
    .. math::
 
@@ -205,5 +222,5 @@ Instead I adopt Youngs approach (TODO: ref):
       :language: c
       :tag: normalise and obtain center normals
 
-Now, on the new coordinate system, the cell sizes in all directions are :math:`1`, which greatly simplifies :ref:`the following discussion <intercept>`.
+Now, on the new coordinate system, each computational grid is a unit square (or a unit cube in 3D), which greatly simplifies :ref:`the following discussion <intercept>`.
 

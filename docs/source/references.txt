@@ -1,0 +1,1 @@
+.. |YOUNGS1982| replace:: Youngs, Numer. Methods Fluid Dyn., 1982

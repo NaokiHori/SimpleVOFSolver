@@ -22,42 +22,42 @@ jobs:
         with:
           repository: 'NaokiHori/SimpleVOFSolver'
           ref: ${{ github.ref_name }}
-      # - name: Install dependencies
-      #   run: |
-      #     sudo apt-get -y update && \
-      #     sudo apt-get -y install gnuplot ghostscript imagemagick tree
-      # - name: Edit ghostscript config
-      #   run: |
-      #     sudo sed -i 's/rights="none"/rights="read|write"/g' /etc/ImageMagick-6/policy.xml
-      # - name: Create eps and tex files
-      #   run: |
-      #     cd docs
-      #     cp create_figures/gnuplot.sh .
-      #     bash gnuplot.sh
-      # - name: Convert eps to pdf
-      #   run: |
-      #     cd docs
-      #     cp create_figures/epstopdf.sh .
-      #     docker run \
-      #       --rm \
-      #       --volume ${PWD}:/project \
-      #       --workdir /project \
-      #       naokihori/texlive:gnuplot-epslatex \
-      #       /bin/sh epstopdf.sh
-      # - name: Compile tex files
-      #   run: |
-      #     cd docs
-      #     cp create_figures/pdflatex.sh .
-      #     docker run \
-      #       --rm \
-      #       --volume ${PWD}:/project \
-      #       --workdir /project \
-      #       naokihori/texlive:gnuplot-epslatex \
-      #       /bin/sh pdflatex.sh
-      # - name: Convert pdf to png
-      #   run: |
-      #     cd docs
-      #     sh create_figures/pdf-to-png.sh
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update && \
+          sudo apt-get -y install gnuplot ghostscript imagemagick tree
+      - name: Edit ghostscript config
+        run: |
+          sudo sed -i 's/rights="none"/rights="read|write"/g' /etc/ImageMagick-6/policy.xml
+      - name: Create eps and tex files
+        run: |
+          cd docs
+          cp create_figures/gnuplot.sh .
+          bash gnuplot.sh
+      - name: Convert eps to pdf
+        run: |
+          cd docs
+          cp create_figures/epstopdf.sh .
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            naokihori/texlive:gnuplot-epslatex \
+            /bin/sh epstopdf.sh
+      - name: Compile tex files
+        run: |
+          cd docs
+          cp create_figures/pdflatex.sh .
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            naokihori/texlive:gnuplot-epslatex \
+            /bin/sh pdflatex.sh
+      - name: Convert pdf to png
+        run: |
+          cd docs
+          sh create_figures/pdf-to-png.sh
       - name: Build documentation using Sphinx
         run: |
           echo "cd docs && make html" > sphinx.sh
