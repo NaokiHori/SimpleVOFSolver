@@ -45,7 +45,7 @@ Now I am ready for computing the numerical fluxes
 to update :math:`\phi`.
 (Recall that my final objective is to integrate the advection equation of :math:`\phi` in time.)
 
-Explicitly, on a Cartesian domain, this integral can be written as
+Explicitly, on a two-dimensional Cartesian domain, this integral can be written as
 
 .. math::
 

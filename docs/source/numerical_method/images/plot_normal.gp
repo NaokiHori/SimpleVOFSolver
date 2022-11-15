@@ -1,7 +1,7 @@
 do for [level = 0 : 2 : 1] {
   reset
 
-  load 'config.gp'
+  load 'config_normal.gp'
 
   set terminal epslatex standalone color size lx, ly font ',17.28'
   set output sprintf('normal%d.tex', level)
@@ -78,7 +78,7 @@ do for [level = 0 : 2 : 1] {
 {
   reset
 
-  load 'config.gp'
+  load 'config_normal.gp'
 
   set terminal epslatex standalone color size lx, ly font ',17.28'
   set output 'normal3.tex'
@@ -144,6 +144,7 @@ do for [level = 0 : 2 : 1] {
   nrm = (nx**2.+ny**2.)**0.5
   nx = nx / nrm
   ny = ny / nrm
+  print nx, ny
   scl = 0.5
   set arrow \
     from 0.5*(ox0+ox1), 0.5*(oy0+oy1) \

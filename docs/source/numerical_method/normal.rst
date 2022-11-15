@@ -43,7 +43,7 @@ To compute this quantity at the cell center :math:`\left( \pic, \pjc \right)`, o
 
 which tends to be unstable since this does not use :math:`\phi_{\pic, \pjc}` (i.e., not central-dominant).
 
-Instead I adopt Youngs approach (|YOUNGS1982|):
+Instead I adopt Youngs approach (introduced by |YOUNGS1982|, extensively explained by |II2012|):
 
 #. Compute gradients at cell corners
 
