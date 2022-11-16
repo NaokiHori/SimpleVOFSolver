@@ -60,6 +60,11 @@ static int compute_normal(const domain_t *domain, interface_t *interface){
   const double * restrict gws = interface->gws;
   for(int j = 0; j <= jsize+1; j++){
     for(int i = 1; i <= isize; i++){
+      // for (almost) single-phase region,
+      //   surface reconstruction is not needed
+      if(VOF(i, j) < VOFMIN || 1.-VOFMIN < VOF(i, j)){
+        continue;
+      }
       /* ! average nx ! 6 ! */
       double nx = 0.25*(
           +DVOF(i  , j  ).x
@@ -222,6 +227,11 @@ static int compute_normal(const domain_t *domain, interface_t *interface){
   for(int k = 0; k <= ksize+1; k++){
     for(int j = 0; j <= jsize+1; j++){
       for(int i = 1; i <= isize; i++){
+        // for (almost) single-phase region,
+        //   surface reconstruction is not needed
+        if(VOF(i, j, k) < VOFMIN || 1.-VOFMIN < VOF(i, j, k)){
+          continue;
+        }
         /* ! average nx ! 10 ! */
         double nx = 0.125*(
             +DVOF(i  , j  , k  ).x
