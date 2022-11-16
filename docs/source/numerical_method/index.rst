@@ -2,17 +2,24 @@
 Numerical method
 ################
 
-It would be very easy if I could use naive second-order central difference scheme to discretise the evolution of :math:`H`, which is, as is well-known, impractical because of the numerical instability.
+It would be very easy if I could use naive second-order central difference scheme to discretise the evolution of :math:`H`:
+
+.. math::
+
+   u_j \frac{\partial H}{\partial x_j}
+   \approx
+   \overline{u_j \frac{\delta H}{\delta x_j}}^j,
+
+which is, as is well-known, impractical because of the numerical instability.
 Thus it is (at least for the time being in the context of finite-difference or volume methods) inevitable to use up-wind schemes.
-This treatment, however, suffers from numerical diffusion, which tends to smear out the sharp nature of the surface.
+This treatment, however, suffers from numerical diffusion, which tends to eliminate the sharp nature of the surface.
 
-One solution is to control the diffusivity of :math:`H` to keep the thickness of the surface, which is categorised as phase-field method.
+One solution is to control the diffusivity of :math:`H` locally to keep the thickness of the surface, which is categorised as phase-field methods.
+The other solution is to reconstruct the surface every (or one in a few) time steps, which is categorised as volume-of-fluid methods.
 
-The other solution is to reconstruct the surface every (or one in a few) time steps, which is categorised as volume-of-fluid method.
+Here I adopt an intermediate solution (very roughly speaking) which is named as `THINC <https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.975>`_ scheme, in which I allow the surface to have a finite thickness, while conduct the surface reconstruction.
 
-Here I adopt the intermediate solution (very roughly speaking), in which I allow the surface to have a finite thickness, while conduct the surface reconstruction: `THINC <https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.975>`_ scheme.
-
-First of all, instead of considering the above equation as it is, I integrate in a control volume (corresponding to computational cell later, but not limited here):
+First of all, instead of considering the above equation as it is, I integrate it in a control volume (not limited to a computational grid here):
 
 .. math::
 
@@ -22,7 +29,7 @@ First of all, instead of considering the above equation as it is, I integrate in
    =
    0.
 
-By assuming commutability, the first term leads
+By assuming the temporal and spatial treatments commutable, the first term leads
 
 .. math::
 
@@ -40,21 +47,21 @@ By adopting the incompressibility constraint, the second terms leads
    =
    \int_V \der{u_j H}{x_j} dV.
 
-Thanks to Gauss theorem, this yields
+Thanks to the Gauss theorem, this yields
 
 .. math::
 
    \int_{\partial V} u_j H n_j dS.
 
-Note that :math:`n_j` is *not* the surface normal of the free surface, but surface normal to the control volume.
+Note that :math:`n_j` is *not* the surface normal of the free surface, but surface normal to the surface of the control volume.
 
-Now I consider to divide the equation by the volume of the control volume
+Dividing the equation by the volume
 
 .. math::
 
    \int_{V} dV,
 
-giving
+gives me
 
 .. math::
 
@@ -64,14 +71,11 @@ giving
    =
    0,
 
-where :math:`\phi` is ``volume-of-fluid``, whose definition is explained by the name, while the right-hand-side is the numerical flux telling the amount of increase or decrease of :math:`\phi`.
+which is the equation playing a key role in this project.
 
-So the question is how to describe the second term numerically.
-In particular, I need to explicitly describe :math:`H` so that I can integrate it numerically.
-To do so, here I adopt the THINC scheme.
-
-I think it is easy to follow if I explain the numerics and their implementations at the same time.
-Please find the following stuffs for details.
+Here, :math:`\phi` is called ``volume-of-fluid``, whose definition is explained by the name.
+The amount of increase or decrease of this quantity :math:`\phi` is given by the second term, which is called flux.
+In order to numerically integrate this equation in time and simulate the evolution of free surface, I need to describe :math:`H` and the integrand, which will be extensively discussed below, as well as the implementations.
 
 .. toctree::
    :maxdepth: 2

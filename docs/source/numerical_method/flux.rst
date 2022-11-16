@@ -74,7 +74,7 @@ First of all, in the current framework, :math:`\ux` is constant on the local cel
    \frac{1}{\Delta x_i \Delta y} \ux \int_{x, \pim} H dy.
 
 The integral is evaluated at the cell face, in which information of :math:`H` is needed.
-Because of a requirement from the stability, I need to use upwind information, i.e.,
+Because of a stability limitation, I need to use information from upward, i.e.,
 
 .. math::
 

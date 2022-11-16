@@ -36,7 +36,7 @@ domain_t *domain_init(void){
   /* ! grid sizes in homogeneous directions ! 2 ! */
   const double dx = lx / glisize;
   const double dy = ly / gljsize;
-  /* ! allocate and assign members ! 21 ! */
+  /* ! allocate and assign members ! 22 ! */
   // allocate
   domain_t *domain = common_calloc(1, sizeof(domain_t));
   domain->glsizes = common_calloc(NDIMS, sizeof(   int));
@@ -68,6 +68,10 @@ domain_t *domain_init(void){
 #include <float.h>
 #include <fftw3.h>
 
+/**
+ * @brief return optimised MPI domain decomposition information
+ * @return : structure sdecomp_t containing domain info
+ */
 static sdecomp_t *optimise_sdecomp_init(void){
   // periodicity in each dimension
   const int periods[NDIMS] = {0, 1, 1};
@@ -84,10 +88,11 @@ static sdecomp_t *optimise_sdecomp_init(void){
       // sanitise, for all dimension, dims should not exceed the number of grid points
       bool legal = true;
       {
-        int glsizes[NDIMS];
-        glsizes[0] = config.get_int("glisize");
-        glsizes[1] = config.get_int("gljsize")/2+1; // after FFT-ed
-        glsizes[2] = config.get_int("glksize");
+        const int glsizes[NDIMS] = {
+          config.get_int("glisize"),
+          config.get_int("gljsize")/2+1, // after FFT-ed
+          config.get_int("glksize")
+        };
         for(int dim1 = 0; dim1 < NDIMS; dim1++){
           const int glsize = glsizes[dim1];
           for(int dim0 = 0; dim0 < NDIMS; dim0++){
@@ -101,51 +106,83 @@ static sdecomp_t *optimise_sdecomp_init(void){
       if(legal){
         // execute transpose and check how long they take
         // for the time being only transposes when solving Poisson equation are considered
-        double wtimes[2] = {0., 0.};
+        // (i.e., implicity and implicitz also request transposes, which are neglected for now)
         sdecomp_t *sdecomp = sdecomp_init(MPI_COMM_WORLD, NDIMS, dims, periods);
-        int glsizes[NDIMS];
-        glsizes[0] = config.get_int("glisize");
-        glsizes[1] = config.get_int("gljsize");
-        glsizes[2] = config.get_int("glksize");
-        int sizes[NDIMS];
+        const int glsizes[NDIMS] = {
+          config.get_int("glisize"),
+          config.get_int("gljsize"),
+          config.get_int("glksize")
+        };
         // x1 to y1 (real)
-        sizes[0] = glsizes[0];
-        sizes[1] = glsizes[1];
-        sizes[2] = glsizes[2];
-        sdecomp_transpose_t *x1_to_y1_r = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_X1PENCIL, sizes, sizeof(      double),           MPI_DOUBLE);
-        sdecomp_transpose_t *y1_to_x1_r = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_Y1PENCIL, sizes, sizeof(      double),           MPI_DOUBLE);
+        sdecomp_transpose_t *x1_to_y1_r = NULL;
+        sdecomp_transpose_t *y1_to_x1_r = NULL;
+        {
+          const int sizes[NDIMS] = {
+            glsizes[0],
+            glsizes[1],
+            glsizes[2]
+          };
+          const size_t size_elem = sizeof(double);
+          const MPI_Datatype mpi_dtype = MPI_DOUBLE;
+          x1_to_y1_r = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_X1PENCIL, sizes, size_elem, mpi_dtype);
+          y1_to_x1_r = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_Y1PENCIL, sizes, size_elem, mpi_dtype);
+        }
         // y1 to z1 (complex)
-        sizes[0] = glsizes[0];
-        sizes[1] = glsizes[1]/2+1;
-        sizes[2] = glsizes[2];
-        sdecomp_transpose_t *y1_to_z1_c = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_Y1PENCIL, sizes, sizeof(fftw_complex), MPI_C_DOUBLE_COMPLEX);
-        sdecomp_transpose_t *z1_to_y1_c = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_Z1PENCIL, sizes, sizeof(fftw_complex), MPI_C_DOUBLE_COMPLEX);
-        // z1 to x2 (complex)
-        sizes[0] = glsizes[0];
-        sizes[1] = glsizes[1]/2+1;
-        sizes[2] = glsizes[2];
-        sdecomp_transpose_t *z1_to_x2_c = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_Z1PENCIL, sizes, sizeof(fftw_complex), MPI_C_DOUBLE_COMPLEX);
-        sdecomp_transpose_t *x2_to_z1_c = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_X2PENCIL, sizes, sizeof(fftw_complex), MPI_C_DOUBLE_COMPLEX);
-        // execute transpose
+        sdecomp_transpose_t *y1_to_z1_c = NULL;
+        sdecomp_transpose_t *z1_to_y1_c = NULL;
+        {
+          const int sizes[NDIMS] = {
+            glsizes[0],
+            glsizes[1]/2+1,
+            glsizes[2]
+          };
+          const size_t size_elem = sizeof(fftw_complex);
+          const MPI_Datatype mpi_dtype = MPI_C_DOUBLE_COMPLEX;
+          y1_to_z1_c = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_Y1PENCIL, sizes, size_elem, mpi_dtype);
+          z1_to_y1_c = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_Z1PENCIL, sizes, size_elem, mpi_dtype);
+        }
+        // z1 to x2 (complex), only when grid is stretched
+        sdecomp_transpose_t *z1_to_x2_c = NULL;
+        sdecomp_transpose_t *x2_to_z1_c = NULL;
+        if(config.get_bool("use_stretched_grid")){
+          const int sizes[NDIMS] = {
+            glsizes[0],
+            glsizes[1]/2+1,
+            glsizes[2]
+          };
+          const size_t size_elem = sizeof(fftw_complex);
+          const MPI_Datatype mpi_dtype = MPI_C_DOUBLE_COMPLEX;
+          z1_to_x2_c = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_Z1PENCIL, sizes, size_elem, mpi_dtype);
+          x2_to_z1_c = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_X2PENCIL, sizes, size_elem, mpi_dtype);
+        }
+        // execute transpose, repeat for "niter" times
+        const int niter = 4;
+        double wtimes[2] = {0., 0.};
         wtimes[0] = common_get_wtime();
-        sdecomp_test_transpose_3d_x1_to_y1(sdecomp, x1_to_y1_r);
-        sdecomp_test_transpose_3d_y1_to_z1(sdecomp, y1_to_z1_c);
-        sdecomp_test_transpose_3d_z1_to_x2(sdecomp, z1_to_x2_c);
-        sdecomp_test_transpose_3d_x2_to_z1(sdecomp, x2_to_z1_c);
-        sdecomp_test_transpose_3d_z1_to_y1(sdecomp, z1_to_y1_c);
-        sdecomp_test_transpose_3d_y1_to_x1(sdecomp, y1_to_x1_r);
+        for(int n = 0; n < niter; n++){
+          sdecomp_test_transpose_3d_x1_to_y1(sdecomp, x1_to_y1_r);
+          sdecomp_test_transpose_3d_y1_to_z1(sdecomp, y1_to_z1_c);
+          if(config.get_bool("use_stretched_grid")){
+            sdecomp_test_transpose_3d_z1_to_x2(sdecomp, z1_to_x2_c);
+            sdecomp_test_transpose_3d_x2_to_z1(sdecomp, x2_to_z1_c);
+          }
+          sdecomp_test_transpose_3d_z1_to_y1(sdecomp, z1_to_y1_c);
+          sdecomp_test_transpose_3d_y1_to_x1(sdecomp, y1_to_x1_r);
+        }
         wtimes[1] = common_get_wtime();
         // clean-up tentative transpose plans
         sdecomp_transpose_finalise(x1_to_y1_r);
         sdecomp_transpose_finalise(y1_to_z1_c);
-        sdecomp_transpose_finalise(z1_to_x2_c);
-        sdecomp_transpose_finalise(x2_to_z1_c);
+        if(config.get_bool("use_stretched_grid")){
+          sdecomp_transpose_finalise(z1_to_x2_c);
+          sdecomp_transpose_finalise(x2_to_z1_c);
+        }
         sdecomp_transpose_finalise(z1_to_y1_c);
         sdecomp_transpose_finalise(y1_to_x1_r);
         // clean-up current sdecomp config
         sdecomp_finalise(sdecomp);
         // check time
-        double wtime = wtimes[1] - wtimes[0];
+        double wtime = (wtimes[1] - wtimes[0]) / niter;
         if(wtime < wtime_optimum){
           dims_optimum[0] = dims[0];
           dims_optimum[1] = dims[1];
@@ -196,7 +233,7 @@ domain_t *domain_init(void){
   const double dx = lx / glisize;
   const double dy = ly / gljsize;
   const double dz = lz / glksize;
-  /* ! allocate and assign members ! 26 ! */
+  /* ! allocate and assign members ! 27 ! */
   // allocate
   domain_t *domain = common_calloc(1, sizeof(domain_t));
   domain->glsizes = common_calloc(NDIMS, sizeof(   int));
