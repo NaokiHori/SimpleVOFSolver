@@ -21,7 +21,7 @@ and its diffused representation:
 
 .. math::
 
-   H \left( X, Y \right)
+   \hat{H} \left( X, Y \right)
    \equiv
    \frac{1}{
       1 + \exp{
@@ -81,7 +81,7 @@ Because of a stability limitation, I need to use information from upward, i.e.,
    \vat{H}{\pimm, \pjc} \,\, & \text{if} \,\, \vat{u}{\pim, \pjc} \ge 0, \\
    \vat{H}{\pic,  \pjc} \,\, & \text{if} \,\, \vat{u}{\pim, \pjc} <   0.
 
-Same holds for the other fluxes, which are implemented as
+Same holds true for the other fluxes, which are implemented as
 
 .. myliteralinclude:: /../../src/interface/update.c
    :language: c

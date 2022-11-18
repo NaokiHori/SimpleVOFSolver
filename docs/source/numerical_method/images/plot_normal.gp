@@ -111,8 +111,8 @@ do for [level = 0 : 2 : 1] {
   scl = 0.5
   ox1 = ox0+scl*(xf[3]-xf[2])
   oy1 = oy0+scl*(yf[3]-yf[2])
-  set arrow from ox0, oy0 to ox1, oy0 as 3
-  set arrow from ox0, oy0 to ox0, oy1 as 3
+  set arrow from ox0, 0.5*(oy0+oy1) to ox1, 0.5*(oy0+oy1) as 3
+  set arrow from 0.5*(ox0+ox1), oy0 to 0.5*(ox0+ox1), oy1 as 3
   set arrow from ox0, oy0 to ox1, oy0 as 1
   set arrow from ox0, oy0 to ox0, oy1 as 1
   set arrow from ox1, oy0 to ox1, oy1 as 1
@@ -130,22 +130,21 @@ do for [level = 0 : 2 : 1] {
   oy0 = 0.5
   ox1 = 4.5
   oy1 = 2.5
-  set arrow from ox0, oy0 to ox1, oy0 as 2
-  set arrow from ox0, oy0 to ox0, oy1 as 2
+  set arrow from ox0, 0.5*(oy0+oy1) to ox1, 0.5*(oy0+oy1) as 2
+  set arrow from 0.5*(ox0+ox1), oy0 to 0.5*(ox0+ox1), oy1 as 2
   set arrow from ox0, oy0 to ox1, oy0 as 1
   set arrow from ox0, oy0 to ox0, oy1 as 1
   set arrow from ox1, oy0 to ox1, oy1 as 1
   set arrow from ox0, oy1 to ox1, oy1 as 1
-  set label '$\underline{e}_X$' center at ox1, oy0-0.2
-  set label '$\underline{e}_Y$' center at ox0-0.2, oy1
+  set label '$\underline{e}_X$' center at ox1-0.2, oy0+0.5*(oy1-oy0)-0.2
+  set label '$\underline{e}_Y$' center at ox0+0.5*(ox1-ox0)-0.2, oy1-0.2
 
   nx = nx / (xf[3]-xf[2])
   ny = ny / (yf[3]-yf[2])
   nrm = (nx**2.+ny**2.)**0.5
   nx = nx / nrm
   ny = ny / nrm
-  print nx, ny
-  scl = 0.5
+  scl = 1.0
   set arrow \
     from 0.5*(ox0+ox1), 0.5*(oy0+oy1) \
     to   0.5*(ox0+ox1)+nx*scl, 0.5*(oy0+oy1)+ny*scl \

@@ -10,8 +10,10 @@ Intercept and THINC scheme
 Now I have obtained local surface normals.
 This information is, however, not enough to decide the piecewise interfacial position uniquely, since a translational freedom still exists:
 
-.. image:: images/intercept0.png
+.. figure:: images/intercept0.png
    :width: 100%
+
+   Three different interfacial positions having the same surface normal.
 
 In this image, for example, although all three surface patterns have the same surface normal, they are obviously different from case to case.
 
@@ -51,8 +53,11 @@ Namely, instead of handling a discontinuous step function :math:`H`, I decide to
 
 Here :math:`\beta` is a sharpness parameter specifying the thickness of the diffusion, whose corresponding concept is Cahn number :math:`Cn` in phase-field methods, and it is unfortunately dependent on the user's choice.
 
-.. image:: images/intercept2.png
+.. figure:: images/intercept2.png
    :width: 100%
+
+   Interface sharpness as a function of a control parameter :math:`\beta`, which are distinguished by different coloured lines.
+   :math:`\beta \rightarrow \infty` corresponds to the analytical discontinuous step function.
 
 Note that :math:`\Delta x = 1` corresponds to the size of the grid.
 
@@ -176,7 +181,7 @@ where
    & P_{ij} \equiv \exp{\left( - 2 \beta \psi_{ij} \right)}, \\
    & D      \equiv \exp{\left( - 2 \beta d         \right)}.
 
-Now it's time to iterate to find :math:`D`.
+Now it's time to iterate to find :math:`D` which satisfies :math:`f \left( D \right) = 0`.
 
 Notice that :math:`P_{ij} = \exp{\left( -2\beta \psi_{ij} \right)}` is only functions of Gaussian quadrature and surface normal, and independent of :math:`D`.
 Thus I can compute them a priori:

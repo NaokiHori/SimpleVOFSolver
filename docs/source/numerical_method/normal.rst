@@ -9,8 +9,11 @@ Surface normal
 
 I assume that I know the profile of :math:`\phi` at :math:`n` step:
 
-.. image:: images/normal0.png
+.. figure:: images/normal0.png
    :width: 100%
+
+   Discrete phase distribution (volume fraction) in two-dimensioinal domain.
+   Uniform grid spacing is adopted in :math:`y` direction, while non-uniform grid is used in :math:`x` direction.
 
 Note that the left-bottom and right-top cells are fully occupied by one of the two phases, while other cells are *shared* by the two phases.
 
@@ -88,8 +91,10 @@ Instead I adopt Youngs approach (introduced by |YOUNGS1982|, extensively explain
       :language: c
       :tag: normalise and obtain corner normals
 
-   .. image:: images/normal1.png
+   .. figure:: images/normal1.png
       :width: 100%
+
+      Normal vectors at cell corners computed by the surrounding four cells.
 
    .. note::
 
@@ -113,8 +118,10 @@ Instead I adopt Youngs approach (introduced by |YOUNGS1982|, extensively explain
 
    Notice that, because of the averaging, the norm of this central vector might not be unity.
 
-   .. image:: images/normal2.png
+   .. figure:: images/normal2.png
       :width: 100%
+
+      Normal vector at cell center, which are computed by averaging the surrounding four normal vectors defined at cell corners.
 
    .. note::
 
@@ -160,8 +167,12 @@ Instead I adopt Youngs approach (introduced by |YOUNGS1982|, extensively explain
          \underline{e}_Y
       \end{pmatrix}.
 
-   .. image:: images/normal3.png
+   .. figure:: images/normal3.png
       :width: 100%
+
+      (Left) normal vector (red arrow) defined at the center of a cell (drawn with a small black rectangle).
+      (Right) normal vector defined at the center of a cell after coordinate transformation.
+      Notice that the directions of the arrow are slightly changed, which is because the grid size is scaled (extended in :math:`y` direction).
 
    .. note::
 
