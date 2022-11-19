@@ -10,16 +10,16 @@ It would be very easy if I could use naive second-order central difference schem
    \approx
    \overline{u_j \frac{\delta H}{\delta x_j}}^j,
 
-which is, as is well-known, impractical because of the numerical instability.
-Thus it is (at least for the time being in the context of finite-difference or volume methods) inevitable to use up-wind schemes.
-This treatment, however, suffers from numerical diffusion, which tends to eliminate the sharp nature of the surface.
+which is, as is well-known, impractical because of numerical instability.
+Thus it is inevitable to use up-wind schemes in general.
+This treatment, however, suffers from numerical diffusions, which tend to eliminate the sharp nature of the surface.
 
 One solution is to control the diffusivity of :math:`H` locally to keep the thickness of the surface, which is categorised as phase-field methods.
 The other solution is to reconstruct the surface every (or one in a few) time steps, which is categorised as volume-of-fluid methods.
 
-Here I adopt an intermediate solution (very roughly speaking) which is named as `THINC <https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.975>`_ scheme, in which I allow the surface to have a finite thickness, while conduct the surface reconstruction.
+Here I adopt an intermediate solution (very roughly speaking) which is named as `THINC <https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.975>`_ scheme, in which I allow the surface to have a finite thickness, and also conduct surface reconstruction.
 
-First of all, instead of considering the above equation as it is, I integrate it in a control volume (not limited to a computational grid here):
+First of all, instead of discretising the above equation directly, I integrate it in a control volume:
 
 .. math::
 

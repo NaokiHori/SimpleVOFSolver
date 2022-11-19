@@ -109,7 +109,7 @@ So roughly speaking, what I will do is to move the hyper-surface (see below) and
 .. figure:: images/intercept3.png
    :width: 100%
 
-   :math:`\hat{H} \left( x, y \right)` for various :math:`d`
+   Hyper-surfaces :math:`\hat{H} \left( x, y, d \right)` as a function of :math:`d`, while the normal vector is fixed.
 
 Before explaining the details, I introduce
 
