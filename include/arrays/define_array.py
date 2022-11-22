@@ -253,15 +253,15 @@ if __name__ == "__main__":
     # arrays to store temporally-averaged statistics
     with open("statistics.h", "w", encoding="utf-8") as f:
         attach_header(f, "statistics", True)
-        # arrays have halo cells, which are not necessary
-        # this is to simplify the output procedure (to use the same wrapper as velocity / temperature)
-        generate_grid_nd(f, "ux1",   "1", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "ux2",   "1", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "uy1",   "0", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "uy2",   "0", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "uz1",   "0", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "uz2",   "0", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "temp1", "0", "isize+1", "0", "jsize+1", "0", "ksize+1")
-        generate_grid_nd(f, "temp2", "0", "isize+1", "0", "jsize+1", "0", "ksize+1")
+        generate_grid_nd(f, "ux1",   "1", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "ux2",   "1", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "uy1",   "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "uy2",   "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "uz1",   "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "uz2",   "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "temp1", "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "temp2", "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "vof1",  "0", "isize+1", "1", "jsize", "1", "ksize")
+        generate_grid_nd(f, "vof2",  "0", "isize+1", "1", "jsize", "1", "ksize")
         attach_footer(f, "statistics")
 

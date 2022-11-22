@@ -1,10 +1,12 @@
 #include <math.h>
 #include "fluid.h"
 #include "temperature.h"
+#include "interface.h"
 #include "statistics.h"
 #include "config.h"
 #include "arrays/fluid.h"
 #include "arrays/temperature.h"
+#include "arrays/interface.h"
 #include "arrays/statistics.h"
 
 
@@ -84,6 +86,29 @@ static int collect_mean_temp(const domain_t *domain, const temperature_t *temper
 }
 
 /**
+ * @brief compute vof^1 and vof^2 and add results to the arrays
+ * @param[in   ] domain     : information related to MPI domain decomposition
+ * @param[in   ] interface  : vof
+ * @param[inout] statistics : arrays of the collected statistics
+ * @return                  : error code
+ */
+static int collect_mean_vof(const domain_t *domain, const interface_t *interface, statistics_t *statistics){
+  const int isize = domain->mysizes[0];
+  const int jsize = domain->mysizes[1];
+  const double *vof = interface->vof;
+  double *vof1 = statistics->vof1;
+  double *vof2 = statistics->vof2;
+  /* ! vof and its square are added ! 6 ! */
+  for(int j = 1; j <= jsize; j++){
+    for(int i = 0; i <= isize+1; i++){
+      VOF1(i, j) += pow(VOF(i, j), 1.);
+      VOF2(i, j) += pow(VOF(i, j), 2.);
+    }
+  }
+  return 0;
+}
+
+/**
  * @brief accumulate statistical data
  * @param[in   ] domain      : information related to MPI domain decomposition
  * @param[in   ] time        : current simulation time units
@@ -92,7 +117,7 @@ static int collect_mean_temp(const domain_t *domain, const temperature_t *temper
  * @param[inout] statistics  : arrays of the collected statistics
  * @return                   : error code
  */
-int statistics_collect(const domain_t *domain, const double time, const fluid_t *fluid, const temperature_t *temperature, statistics_t *statistics){
+int statistics_collect(const domain_t *domain, const double time, const fluid_t *fluid, const temperature_t *temperature, const interface_t *interface, statistics_t *statistics){
   if(!is_scheduled){
     // timing has not been scheduled yet
     // load from configuration
@@ -106,6 +131,7 @@ int statistics_collect(const domain_t *domain, const double time, const fluid_t 
     collect_mean_ux(domain, fluid, statistics);
     collect_mean_uy(domain, fluid, statistics);
     collect_mean_temp(domain, temperature, statistics);
+    collect_mean_vof(domain, interface, statistics);
     /* ! number of samples is incremented ! 1 ! */
     statistics->num += 1;
     stat_next += stat_rate;
@@ -220,6 +246,32 @@ static int collect_mean_temp(const domain_t *domain, const temperature_t *temper
 }
 
 /**
+ * @brief compute vof^1 and vof^2 and add results to the arrays
+ * @param[in   ] domain     : information related to MPI domain decomposition
+ * @param[in   ] interface  : vof
+ * @param[inout] statistics : arrays of the collected statistics
+ * @return                  : error code
+ */
+static int collect_mean_vof(const domain_t *domain, const interface_t *interface, statistics_t *statistics){
+  const int isize = domain->mysizes[0];
+  const int jsize = domain->mysizes[1];
+  const int ksize = domain->mysizes[2];
+  const double *vof = interface->vof;
+  double *vof1 = statistics->vof1;
+  double *vof2 = statistics->vof2;
+  /* ! vof and its square are added ! 8 ! */
+  for(int k = 1; k <= ksize; k++){
+    for(int j = 1; j <= jsize; j++){
+      for(int i = 0; i <= isize+1; i++){
+        VOF1(i, j, k) += pow(VOF(i, j, k), 1.);
+        VOF2(i, j, k) += pow(VOF(i, j, k), 2.);
+      }
+    }
+  }
+  return 0;
+}
+
+/**
  * @brief accumulate statistical data
  * @param[in   ] domain      : information related to MPI domain decomposition
  * @param[in   ] time        : current simulation time units
@@ -228,7 +280,7 @@ static int collect_mean_temp(const domain_t *domain, const temperature_t *temper
  * @param[inout] statistics  : arrays of the collected statistics
  * @return                   : error code
  */
-int statistics_collect(const domain_t *domain, const double time, const fluid_t *fluid, const temperature_t *temperature, statistics_t *statistics){
+int statistics_collect(const domain_t *domain, const double time, const fluid_t *fluid, const temperature_t *temperature, const interface_t *interface, statistics_t *statistics){
   if(!is_scheduled){
     // timing has not been scheduled yet
     // load from configuration
@@ -243,6 +295,7 @@ int statistics_collect(const domain_t *domain, const double time, const fluid_t 
     collect_mean_uy(domain, fluid, statistics);
     collect_mean_uz(domain, fluid, statistics);
     collect_mean_temp(domain, temperature, statistics);
+    collect_mean_vof(domain, interface, statistics);
     /* ! number of samples is incremented ! 1 ! */
     statistics->num += 1;
     stat_next += stat_rate;

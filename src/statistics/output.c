@@ -120,6 +120,49 @@ static int save_temperature(const char dirname[], const domain_t *domain, const 
   return 0;
 }
 
+/**
+ * @brief save statistical data having vof^1 and vof^2
+ * @param[in] dirname    : name of directory to which *.npy files will be written
+ * @param[in] domain    : information related to MPI domain decomposition
+ * @param[in] statistics : vof^1 and vof^2
+ * @return               : error code
+ */
+static int save_vof(const char dirname[], const domain_t *domain, const statistics_t *statistics){
+  const int glisize = domain->glsizes[0];
+  const int gljsize = domain->glsizes[1];
+  const int   isize = domain->mysizes[0];
+  const int   jsize = domain->mysizes[1];
+  const int ioffset = domain->offsets[0];
+  const int joffset = domain->offsets[1];
+  // vof1, vof2: [0:isize+1] x [1:jsize]
+  {
+    const double *vof1 = statistics->vof1;
+    const double *vof2 = statistics->vof2;
+    const int glsizes[NDIMS] = {gljsize, glisize+2};
+    const int mysizes[NDIMS] = {  jsize,   isize+2};
+    const int offsets[NDIMS] = {joffset, ioffset  };
+    double *buf = common_calloc(mysizes[0]*mysizes[1], sizeof(double));
+    // vof1
+    for(int cnt = 0, j = 1; j <= jsize; j++){
+      for(int i = 0; i <= isize+1; i++){
+        buf[cnt] = VOF1(i, j);
+        cnt++;
+      }
+    }
+    fileio_w_nd_parallel(dirname, "vof1", NDIMS, glsizes, mysizes, offsets, buf);
+    // vof2
+    for(int cnt = 0, j = 1; j <= jsize; j++){
+      for(int i = 0; i <= isize+1; i++){
+        buf[cnt] = VOF2(i, j);
+        cnt++;
+      }
+    }
+    fileio_w_nd_parallel(dirname, "vof2", NDIMS, glsizes, mysizes, offsets, buf);
+    common_free(buf);
+  }
+  return 0;
+}
+
 #else // NDIMS == 3
 
 /**
@@ -282,6 +325,56 @@ static int save_temperature(const char dirname[], const domain_t *domain, const 
   return 0;
 }
 
+/**
+ * @brief save statistical data having vof^1 and vof^2
+ * @param[in] dirname    : name of directory to which *.npy files will be written
+ * @param[in] domain    : information related to MPI domain decomposition
+ * @param[in] statistics : vof^1 and vof^2
+ * @return               : error code
+ */
+static int save_vof(const char dirname[], const domain_t *domain, const statistics_t *statistics){
+  const int glisize = domain->glsizes[0];
+  const int gljsize = domain->glsizes[1];
+  const int glksize = domain->glsizes[2];
+  const int   isize = domain->mysizes[0];
+  const int   jsize = domain->mysizes[1];
+  const int   ksize = domain->mysizes[2];
+  const int ioffset = domain->offsets[0];
+  const int joffset = domain->offsets[1];
+  const int koffset = domain->offsets[2];
+  // vof1, vof2: [0:isize+1] x [1:jsize] x [1:ksize]
+  {
+    const double *vof1 = statistics->vof1;
+    const double *vof2 = statistics->vof2;
+    const int glsizes[NDIMS] = {glksize, gljsize, glisize+2};
+    const int mysizes[NDIMS] = {  ksize,   jsize,   isize+2};
+    const int offsets[NDIMS] = {koffset, joffset, ioffset  };
+    double *buf = common_calloc(mysizes[0]*mysizes[1]*mysizes[2], sizeof(double));
+    // vof1
+    for(int cnt = 0, k = 1; k <= ksize; k++){
+      for(int j = 1; j <= jsize; j++){
+        for(int i = 0; i <= isize+1; i++){
+          buf[cnt] = VOF1(i, j, k);
+          cnt++;
+        }
+      }
+    }
+    fileio_w_nd_parallel(dirname, "vof1", NDIMS, glsizes, mysizes, offsets, buf);
+    // vof2
+    for(int cnt = 0, k = 1; k <= ksize; k++){
+      for(int j = 1; j <= jsize; j++){
+        for(int i = 0; i <= isize+1; i++){
+          buf[cnt] = VOF2(i, j, k);
+          cnt++;
+        }
+      }
+    }
+    fileio_w_nd_parallel(dirname, "vof2", NDIMS, glsizes, mysizes, offsets, buf);
+    common_free(buf);
+  }
+  return 0;
+}
+
 #endif // NDIMS
 
 /**
@@ -317,6 +410,9 @@ int statistics_output(const domain_t *domain, const int step, const double time,
   save_fluid(dirname, domain, statistics);
   if(config.get_bool("solve_temp")){
     save_temperature(dirname, domain, statistics);
+  }
+  if(config.get_bool("solve_interface")){
+    save_vof(dirname, domain, statistics);
   }
   // don't forget to free memory holding directory name
   common_free(dirname);

@@ -18,6 +18,8 @@ int statistics_finalise(statistics_t *statistics){
 #endif
   common_free(statistics->temp1);
   common_free(statistics->temp2);
+  common_free(statistics->vof1);
+  common_free(statistics->vof2);
   common_free(statistics);
   return 0;
 }

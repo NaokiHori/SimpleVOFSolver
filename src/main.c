@@ -89,7 +89,7 @@ int main(void){
     }
     /* ! collect statistics ! 3 ! */
     if(stat_next < time){
-      statistics_collect(domain, time, fluid, temperature, statistics);
+      statistics_collect(domain, time, fluid, temperature, interface, statistics);
     }
     /* ! terminate when the simulation is finished ! 3 ! */
     if(time > config.get_double("timemax")){

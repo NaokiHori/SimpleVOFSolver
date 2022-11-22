@@ -23,6 +23,8 @@ statistics_t *statistics_init(const domain_t *domain){
   statistics->uy2   = common_calloc(  UY2_SIZE_0 *   UY2_SIZE_1, sizeof(double));
   statistics->temp1 = common_calloc(TEMP1_SIZE_0 * TEMP1_SIZE_1, sizeof(double));
   statistics->temp2 = common_calloc(TEMP2_SIZE_0 * TEMP2_SIZE_1, sizeof(double));
+  statistics->vof1  = common_calloc( VOF1_SIZE_0 *  VOF1_SIZE_1, sizeof(double));
+  statistics->vof2  = common_calloc( VOF2_SIZE_0 *  VOF2_SIZE_1, sizeof(double));
   return statistics;
 }
 
@@ -48,6 +50,8 @@ statistics_t *statistics_init(const domain_t *domain){
   statistics->uz2   = common_calloc(  UZ2_SIZE_0 *   UZ2_SIZE_1 *   UZ2_SIZE_2, sizeof(double));
   statistics->temp1 = common_calloc(TEMP1_SIZE_0 * TEMP1_SIZE_1 * TEMP1_SIZE_2, sizeof(double));
   statistics->temp2 = common_calloc(TEMP2_SIZE_0 * TEMP2_SIZE_1 * TEMP2_SIZE_2, sizeof(double));
+  statistics->vof1  = common_calloc( VOF1_SIZE_0 *  VOF1_SIZE_1 *  VOF1_SIZE_2, sizeof(double));
+  statistics->vof2  = common_calloc( VOF2_SIZE_0 *  VOF2_SIZE_1 *  VOF2_SIZE_2, sizeof(double));
   return statistics;
 }
 
