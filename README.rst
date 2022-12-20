@@ -29,7 +29,7 @@ Overview
 ********
 
 This library numerically solves the motion of sharp interfacial structures in two- and three-dimensional Cartesian domains using finite-difference and volume-of-fluid methods.
-This is built on top of `SimpleNSSolver <https://github.com/NaokiHori/SimpleVOFSolver>`_.
+This is built on top of `SimpleNSSolver <https://github.com/NaokiHori/SimpleNavierStokesSolver>`_.
 
 **********
 Dependency
@@ -44,7 +44,7 @@ Quick start
 ***********
 
 I guess people who are interested in this project already have installed the above dependencies.
-(If not, please check the README of `SimpleVOFSolver <https://github.com/NaokiHori/SimpleVOFSolver>`_.)
+(If not, please check the README of `SimpleNSSolver <https://github.com/NaokiHori/SimpleNavierStokesSolver>`_.)
 
 Just in case, Docker image is available:
 
@@ -70,7 +70,7 @@ Documentation
 *************
 
 Documentation can be found `here <https://naokihori.github.io/SimpleVOFSolver>`_ (still on half way).
-Please refer to the `documentation of SimpleNSSolver <https://naokihori.github.io/SimpleVOFSolver>`_ for other details.
+Please refer to the `documentation of SimpleNSSolver <https://naokihori.github.io/SimpleNavierStokesSolver>`_ for other details.
 
 ****************
 Acknowledgements
