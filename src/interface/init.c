@@ -11,120 +11,6 @@
 #include "arrays/interface.h"
 
 
-#if NDIMS == 2
-
-static interface_t *allocate(const domain_t *domain){
-  const int isize = domain->mysizes[0];
-  const int jsize = domain->mysizes[1];
-  interface_t *interface = common_calloc(1, sizeof(interface_t));
-  interface->vof      = common_calloc(VOF_SIZE_0      * VOF_SIZE_1     , sizeof(double));
-  interface->dvof     = common_calloc(DVOF_SIZE_0     * DVOF_SIZE_1    , sizeof(dvof_t));
-  interface->normal   = common_calloc(NORMAL_SIZE_0   * NORMAL_SIZE_1  , sizeof(nrml_t));
-  interface->curv     = common_calloc(CURV_SIZE_0     * CURV_SIZE_1    , sizeof(double));
-  interface->voffluxx = common_calloc(VOFFLUXX_SIZE_0 * VOFFLUXX_SIZE_1, sizeof(double));
-  interface->voffluxy = common_calloc(VOFFLUXY_SIZE_0 * VOFFLUXY_SIZE_1, sizeof(double));
-  interface->voffrcx  = common_calloc(VOFFRCX_SIZE_0  * VOFFRCX_SIZE_1 , sizeof(double));
-  interface->voffrcy  = common_calloc(VOFFRCY_SIZE_0  * VOFFRCY_SIZE_1 , sizeof(double));
-  interface->vofsrca  = common_calloc(VOFSRCA_SIZE_0  * VOFSRCA_SIZE_1 , sizeof(double));
-  interface->vofsrcb  = common_calloc(VOFSRCB_SIZE_0  * VOFSRCB_SIZE_1 , sizeof(double));
-  interface->gps      = common_calloc(ORDER_GAUSS, sizeof(double));
-  interface->gws      = common_calloc(ORDER_GAUSS, sizeof(double));
-  return interface;
-}
-
-static int init(const domain_t *domain, interface_t *interface){
-  const int isize = domain->mysizes[0];
-  const int jsize = domain->mysizes[1];
-  const int joffs = domain->offsets[1];
-  const double lx = domain->lengths[0];
-  const double ly = domain->lengths[1];
-  const double *xc = domain->xc;
-  const double *dxf = domain->dxf;
-  const double dy = domain->dy;
-  const double cx = 0.50*lx;
-  const double cy = 0.50*ly;
-  const double delta = dy;
-  double yoffs = dy * joffs;
-  double *vof = interface->vof;
-  double *g_gps = NULL;
-  double *g_gws = NULL;
-  double *l_gps_x = NULL;
-  double *l_gws_x = NULL;
-  double *l_gps_y = NULL;
-  double *l_gws_y = NULL;
-  g_gps   = common_calloc(ORDER_GAUSS, sizeof(double));
-  g_gws   = common_calloc(ORDER_GAUSS, sizeof(double));
-  l_gps_x = common_calloc(ORDER_GAUSS, sizeof(double));
-  l_gws_x = common_calloc(ORDER_GAUSS, sizeof(double));
-  l_gps_y = common_calloc(ORDER_GAUSS, sizeof(double));
-  l_gws_y = common_calloc(ORDER_GAUSS, sizeof(double));
-  // obtain gaussian quadrature variables with interval [-1, 1]
-  // (interface->g[pw]s cannot be used since they are with [-0.5, 0.5])
-  init_gaussian_quadrature(ORDER_GAUSS, g_gps, g_gws);
-  for(int j = 1; j <= jsize; j++){
-    double y0 = 0.5*(2*j-1)*dy+yoffs;
-    // compute local gaussian quadrature with interval [y-0.5*dy, y+0.5*dy]
-    convert_gaussian_quadrature(ORDER_GAUSS, y0-0.5*dy, y0+0.5*dy, g_gps, g_gws, l_gps_y, l_gws_y);
-    for(int i = 1; i <= isize; i++){
-      double x0 = XC(i);
-      double dx = DXF(i);
-      // compute local gaussian quadrature with interval [x-0.5*dx, x+0.5*dx]
-      convert_gaussian_quadrature(ORDER_GAUSS, x0-0.5*dx, x0+0.5*dx, g_gps, g_gws, l_gps_x, l_gws_x);
-      // integrate H(distance) to determine VOF value
-      for(int jj=0; jj<ORDER_GAUSS; jj++){
-        for(int ii=0; ii<ORDER_GAUSS; ii++){
-          double dist = 0.25-sqrt(pow(l_gps_x[ii]-cx, 2.)+pow(l_gps_y[jj]-cy, 2.));
-          VOF(i, j) +=
-            l_gws_x[ii]*l_gws_y[jj]
-            *0.5*(1.+tanh(VOFBETA*dist/delta))
-            /dx/dy;
-        }
-      }
-    }
-  }
-  common_free(g_gps);
-  common_free(g_gws);
-  common_free(l_gps_x);
-  common_free(l_gws_x);
-  common_free(l_gps_y);
-  common_free(l_gws_y);
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      VOF(i, j) = fmin(1., VOF(i, j));
-      VOF(i, j) = fmax(0., VOF(i, j));
-    }
-  }
-  interface_update_boundaries_vof(domain, vof);
-  return 0;
-}
-
-static int load(const domain_t *domain, interface_t *interface){
-  const int glisize = domain->glsizes[0];
-  const int gljsize = domain->glsizes[1];
-  const int   isize = domain->mysizes[0];
-  const int   jsize = domain->mysizes[1];
-  const int ioffset = domain->offsets[0];
-  const int joffset = domain->offsets[1];
-  // vof: [0:isize+1] x [1:jsize] x [1:ksize]
-  double * restrict vof = interface->vof;
-  const int glsizes[NDIMS] = {gljsize, glisize+2};
-  const int mysizes[NDIMS] = {  jsize,   isize+2};
-  const int offsets[NDIMS] = {joffset, ioffset  };
-  double *buf = common_calloc(mysizes[0] * mysizes[1], sizeof(double));
-  const char *dirname = config.get_string("restart_dir");
-  fileio_r_nd_parallel(dirname, "vof", NDIMS, glsizes, mysizes, offsets, buf);
-  for(int cnt = 0, j = 1; j <= jsize; j++){
-    for(int i = 0; i <= isize+1; i++){
-      VOF(i, j) = buf[cnt];
-      cnt++;
-    }
-  }
-  common_free(buf);
-  interface_update_boundaries_vof(domain, vof);
-  return 0;
-}
-
-#else // NDIMS == 3
 
 static interface_t *allocate(const domain_t *domain){
   const int isize = domain->mysizes[0];
@@ -262,7 +148,6 @@ static int load(const domain_t *domain, interface_t *interface){
   return 0;
 }
 
-#endif // NDIMS
 
 interface_t *interface_init(const domain_t *domain){
   /* memory allocation */

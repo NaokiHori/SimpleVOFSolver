@@ -8,31 +8,6 @@
 #define VOFBETA 2.
 #define ORDER_GAUSS 2
 
-#if NDIMS == 2
-
-typedef struct {
-  double x;
-  double y;
-} dvof_t;
-
-typedef struct {
-  double a00;
-  double a10;
-  double a01;
-} nrml_t;
-
-struct interface_t_ {
-  double *vof;
-  dvof_t *dvof;
-  nrml_t *normal;
-  double *curv;
-  double *voffluxx, *voffluxy;
-  double *voffrcx, *voffrcy;
-  double *vofsrca, *vofsrcb;
-  double *gps, *gws;
-};
-
-#else // NDIMS == 3
 
 typedef struct {
   double x;
@@ -58,7 +33,6 @@ struct interface_t_ {
   double *gps, *gws;
 };
 
-#endif // NDIMS
 
 /* initialiser and finaliser */
 extern interface_t *interface_init(const domain_t *domain);

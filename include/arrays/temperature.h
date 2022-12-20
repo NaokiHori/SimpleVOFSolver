@@ -11,73 +11,38 @@
 #include "domain.h"
 
 /*** temp ***/
-#if NDIMS == 2
-#define TEMP_SIZE_0 (isize+2)
-#define TEMP_SIZE_1 (jsize+2)
-#define TEMP(I, J) (temp[ (J  ) * TEMP_SIZE_0 + (I  ) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
 #define TEMP_SIZE_0 (isize+2)
 #define TEMP_SIZE_1 (jsize+2)
 #define TEMP_SIZE_2 (ksize+2)
 #define TEMP(I, J, K) (temp[ (K  ) * TEMP_SIZE_1 * TEMP_SIZE_0 + (J  ) * TEMP_SIZE_0 + (I  ) ])
-#endif // NDIMS == 3
 /*** temp ***/
 
 /*** tempforcex ***/
-#if NDIMS == 2
-#define TEMPFORCEX_SIZE_0 (isize-1)
-#define TEMPFORCEX_SIZE_1 (jsize+0)
-#define TEMPFORCEX(I, J) (tempforcex[ (J-1) * TEMPFORCEX_SIZE_0 + (I-2) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
 #define TEMPFORCEX_SIZE_0 (isize-1)
 #define TEMPFORCEX_SIZE_1 (jsize+0)
 #define TEMPFORCEX_SIZE_2 (ksize+0)
 #define TEMPFORCEX(I, J, K) (tempforcex[ (K-1) * TEMPFORCEX_SIZE_1 * TEMPFORCEX_SIZE_0 + (J-1) * TEMPFORCEX_SIZE_0 + (I-2) ])
-#endif // NDIMS == 3
 /*** tempforcex ***/
 
 /*** srctempa ***/
-#if NDIMS == 2
-#define SRCTEMPA_SIZE_0 (isize+0)
-#define SRCTEMPA_SIZE_1 (jsize+0)
-#define SRCTEMPA(I, J) (srctempa[ (J-1) * SRCTEMPA_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
 #define SRCTEMPA_SIZE_0 (isize+0)
 #define SRCTEMPA_SIZE_1 (jsize+0)
 #define SRCTEMPA_SIZE_2 (ksize+0)
 #define SRCTEMPA(I, J, K) (srctempa[ (K-1) * SRCTEMPA_SIZE_1 * SRCTEMPA_SIZE_0 + (J-1) * SRCTEMPA_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** srctempa ***/
 
 /*** srctempb ***/
-#if NDIMS == 2
-#define SRCTEMPB_SIZE_0 (isize+0)
-#define SRCTEMPB_SIZE_1 (jsize+0)
-#define SRCTEMPB(I, J) (srctempb[ (J-1) * SRCTEMPB_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
 #define SRCTEMPB_SIZE_0 (isize+0)
 #define SRCTEMPB_SIZE_1 (jsize+0)
 #define SRCTEMPB_SIZE_2 (ksize+0)
 #define SRCTEMPB(I, J, K) (srctempb[ (K-1) * SRCTEMPB_SIZE_1 * SRCTEMPB_SIZE_0 + (J-1) * SRCTEMPB_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** srctempb ***/
 
 /*** srctempg ***/
-#if NDIMS == 2
-#define SRCTEMPG_SIZE_0 (isize+0)
-#define SRCTEMPG_SIZE_1 (jsize+0)
-#define SRCTEMPG(I, J) (srctempg[ (J-1) * SRCTEMPG_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
 #define SRCTEMPG_SIZE_0 (isize+0)
 #define SRCTEMPG_SIZE_1 (jsize+0)
 #define SRCTEMPG_SIZE_2 (ksize+0)
 #define SRCTEMPG(I, J, K) (srctempg[ (K-1) * SRCTEMPG_SIZE_1 * SRCTEMPG_SIZE_0 + (J-1) * SRCTEMPG_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** srctempg ***/
 
 #endif // ARRAYS_{name}_H

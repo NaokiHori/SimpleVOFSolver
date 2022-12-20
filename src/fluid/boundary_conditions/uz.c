@@ -3,7 +3,6 @@
 #include "arrays/fluid.h"
 
 
-#if NDIMS == 3
 
 /**
  * @brief update boundary values of z velocity
@@ -73,4 +72,3 @@ int fluid_update_boundaries_uz(const domain_t * restrict domain, double * restri
   return 0;
 }
 
-#endif // NDIMS == 3

@@ -3,50 +3,6 @@
 #include "arrays/fluid.h"
 
 
-#if NDIMS == 2
-
-/**
- * @brief update boundary values of x velocity
- * @param[in   ] domain : information about domain decomposition and size
- * @param[inout] ux     : x velocity
- * @return              : error code
- */
-int fluid_update_boundaries_ux(const domain_t * restrict domain, double * restrict ux){
-  const int isize = domain->mysizes[0];
-  const int jsize = domain->mysizes[1];
-  /* ! update y halo values in 2D ! 23 ! */
-  {
-    const MPI_Comm comm = domain->sdecomp->comm_cart;
-    // check neighbour ranks, negative and positive
-    int neg, pos;
-    MPI_Cart_shift(comm, 1, 1, &neg, &pos);
-    // create datatype
-    MPI_Datatype dtype;
-    MPI_Type_contiguous(isize-1, MPI_DOUBLE, &dtype);
-    MPI_Type_commit(&dtype);
-    // communicate
-    MPI_Sendrecv(
-      /* send to   pos. */ &UX(2,   jsize), 1, dtype, pos, 0,
-      /* recv from neg. */ &UX(2,       0), 1, dtype, neg, 0,
-      comm, MPI_STATUS_IGNORE
-    );
-    MPI_Sendrecv(
-      /* send to   neg. */ &UX(2,       1), 1, dtype, neg, 0,
-      /* recv from pos. */ &UX(2, jsize+1), 1, dtype, pos, 0,
-      comm, MPI_STATUS_IGNORE
-    );
-    // clean-up used datatype
-    MPI_Type_free(&dtype);
-  }
-  /* ! set boundary values ! 4 ! */
-  for(int j = 1; j <= jsize; j++){
-    UX(      1, j) = 0.; // impermeable
-    UX(isize+1, j) = 0.; // impermeable
-  }
-  return 0;
-}
-
-#else // NDIMS == 3
 
 /**
  * @brief update boundary values of x velocity
@@ -116,4 +72,3 @@ int fluid_update_boundaries_ux(const domain_t * restrict domain, double * restri
   return 0;
 }
 
-#endif // NDIMS

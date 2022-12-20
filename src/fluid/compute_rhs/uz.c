@@ -1,4 +1,3 @@
-#if NDIMS == 3
 
 #include <string.h>
 #include <math.h>
@@ -137,4 +136,3 @@ int compute_rhs_uz(const domain_t * restrict domain, const int rkstep, fluid_t *
   return 0;
 }
 
-#endif // NDIMS == 3
