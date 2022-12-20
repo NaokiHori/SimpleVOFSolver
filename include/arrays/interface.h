@@ -11,161 +11,69 @@
 #include "domain.h"
 
 /*** vof ***/
-#if NDIMS == 2
 #define VOF_SIZE_0 (isize+2)
 #define VOF_SIZE_1 (jsize+4)
 #define VOF(I, J) (vof[ (J+1) * VOF_SIZE_0 + (I  ) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOF_SIZE_0 (isize+2)
-#define VOF_SIZE_1 (jsize+4)
-#define VOF_SIZE_2 (ksize+4)
-#define VOF(I, J, K) (vof[ (K+1) * VOF_SIZE_1 * VOF_SIZE_0 + (J+1) * VOF_SIZE_0 + (I  ) ])
-#endif // NDIMS == 3
 /*** vof ***/
 
 /*** dvof ***/
-#if NDIMS == 2
 #define DVOF_SIZE_0 (isize+1)
 #define DVOF_SIZE_1 (jsize+3)
 #define DVOF(I, J) (dvof[ (J  ) * DVOF_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define DVOF_SIZE_0 (isize+1)
-#define DVOF_SIZE_1 (jsize+3)
-#define DVOF_SIZE_2 (ksize+3)
-#define DVOF(I, J, K) (dvof[ (K  ) * DVOF_SIZE_1 * DVOF_SIZE_0 + (J  ) * DVOF_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** dvof ***/
 
 /*** normal ***/
-#if NDIMS == 2
 #define NORMAL_SIZE_0 (isize+0)
 #define NORMAL_SIZE_1 (jsize+2)
 #define NORMAL(I, J) (normal[ (J  ) * NORMAL_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define NORMAL_SIZE_0 (isize+0)
-#define NORMAL_SIZE_1 (jsize+2)
-#define NORMAL_SIZE_2 (ksize+2)
-#define NORMAL(I, J, K) (normal[ (K  ) * NORMAL_SIZE_1 * NORMAL_SIZE_0 + (J  ) * NORMAL_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** normal ***/
 
 /*** curv ***/
-#if NDIMS == 2
 #define CURV_SIZE_0 (isize+0)
 #define CURV_SIZE_1 (jsize+2)
 #define CURV(I, J) (curv[ (J  ) * CURV_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define CURV_SIZE_0 (isize+0)
-#define CURV_SIZE_1 (jsize+2)
-#define CURV_SIZE_2 (ksize+2)
-#define CURV(I, J, K) (curv[ (K  ) * CURV_SIZE_1 * CURV_SIZE_0 + (J  ) * CURV_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** curv ***/
 
 /*** vofsrca ***/
-#if NDIMS == 2
 #define VOFSRCA_SIZE_0 (isize+0)
 #define VOFSRCA_SIZE_1 (jsize+0)
 #define VOFSRCA(I, J) (vofsrca[ (J-1) * VOFSRCA_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOFSRCA_SIZE_0 (isize+0)
-#define VOFSRCA_SIZE_1 (jsize+0)
-#define VOFSRCA_SIZE_2 (ksize+0)
-#define VOFSRCA(I, J, K) (vofsrca[ (K-1) * VOFSRCA_SIZE_1 * VOFSRCA_SIZE_0 + (J-1) * VOFSRCA_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** vofsrca ***/
 
 /*** vofsrcb ***/
-#if NDIMS == 2
 #define VOFSRCB_SIZE_0 (isize+0)
 #define VOFSRCB_SIZE_1 (jsize+0)
 #define VOFSRCB(I, J) (vofsrcb[ (J-1) * VOFSRCB_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOFSRCB_SIZE_0 (isize+0)
-#define VOFSRCB_SIZE_1 (jsize+0)
-#define VOFSRCB_SIZE_2 (ksize+0)
-#define VOFSRCB(I, J, K) (vofsrcb[ (K-1) * VOFSRCB_SIZE_1 * VOFSRCB_SIZE_0 + (J-1) * VOFSRCB_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** vofsrcb ***/
 
 /*** voffluxx ***/
-#if NDIMS == 2
 #define VOFFLUXX_SIZE_0 (isize+1)
 #define VOFFLUXX_SIZE_1 (jsize+0)
 #define VOFFLUXX(I, J) (voffluxx[ (J-1) * VOFFLUXX_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOFFLUXX_SIZE_0 (isize+1)
-#define VOFFLUXX_SIZE_1 (jsize+0)
-#define VOFFLUXX_SIZE_2 (ksize+0)
-#define VOFFLUXX(I, J, K) (voffluxx[ (K-1) * VOFFLUXX_SIZE_1 * VOFFLUXX_SIZE_0 + (J-1) * VOFFLUXX_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** voffluxx ***/
 
 /*** voffluxy ***/
-#if NDIMS == 2
 #define VOFFLUXY_SIZE_0 (isize+0)
 #define VOFFLUXY_SIZE_1 (jsize+1)
 #define VOFFLUXY(I, J) (voffluxy[ (J-1) * VOFFLUXY_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOFFLUXY_SIZE_0 (isize+0)
-#define VOFFLUXY_SIZE_1 (jsize+1)
-#define VOFFLUXY_SIZE_2 (ksize+0)
-#define VOFFLUXY(I, J, K) (voffluxy[ (K-1) * VOFFLUXY_SIZE_1 * VOFFLUXY_SIZE_0 + (J-1) * VOFFLUXY_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** voffluxy ***/
 
 /*** voffluxz ***/
-#if NDIMS == 3
-#define VOFFLUXZ_SIZE_0 (isize+0)
-#define VOFFLUXZ_SIZE_1 (jsize+0)
-#define VOFFLUXZ_SIZE_2 (ksize+1)
-#define VOFFLUXZ(I, J, K) (voffluxz[ (K-1) * VOFFLUXZ_SIZE_1 * VOFFLUXZ_SIZE_0 + (J-1) * VOFFLUXZ_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** voffluxz ***/
 
 /*** voffrcx ***/
-#if NDIMS == 2
 #define VOFFRCX_SIZE_0 (isize-1)
 #define VOFFRCX_SIZE_1 (jsize+0)
 #define VOFFRCX(I, J) (voffrcx[ (J-1) * VOFFRCX_SIZE_0 + (I-2) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOFFRCX_SIZE_0 (isize-1)
-#define VOFFRCX_SIZE_1 (jsize+0)
-#define VOFFRCX_SIZE_2 (ksize+0)
-#define VOFFRCX(I, J, K) (voffrcx[ (K-1) * VOFFRCX_SIZE_1 * VOFFRCX_SIZE_0 + (J-1) * VOFFRCX_SIZE_0 + (I-2) ])
-#endif // NDIMS == 3
 /*** voffrcx ***/
 
 /*** voffrcy ***/
-#if NDIMS == 2
 #define VOFFRCY_SIZE_0 (isize+0)
 #define VOFFRCY_SIZE_1 (jsize+0)
 #define VOFFRCY(I, J) (voffrcy[ (J-1) * VOFFRCY_SIZE_0 + (I-1) ])
-#endif // NDIMS == 2
-#if NDIMS == 3
-#define VOFFRCY_SIZE_0 (isize+0)
-#define VOFFRCY_SIZE_1 (jsize+0)
-#define VOFFRCY_SIZE_2 (ksize+0)
-#define VOFFRCY(I, J, K) (voffrcy[ (K-1) * VOFFRCY_SIZE_1 * VOFFRCY_SIZE_0 + (J-1) * VOFFRCY_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** voffrcy ***/
 
 /*** voffrcz ***/
-#if NDIMS == 3
-#define VOFFRCZ_SIZE_0 (isize+0)
-#define VOFFRCZ_SIZE_1 (jsize+0)
-#define VOFFRCZ_SIZE_2 (ksize+0)
-#define VOFFRCZ(I, J, K) (voffrcz[ (K-1) * VOFFRCZ_SIZE_1 * VOFFRCZ_SIZE_0 + (J-1) * VOFFRCZ_SIZE_0 + (I-1) ])
-#endif // NDIMS == 3
 /*** voffrcz ***/
 
 #endif // ARRAYS_{name}_H
