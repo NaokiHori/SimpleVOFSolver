@@ -18,11 +18,11 @@ THIS IS AN ON-GOING PROJECT.
 .. |LastCommit| image:: https://img.shields.io/github/last-commit/NaokiHori/SimpleVOFSolver/main
 .. _LastCommit: https://github.com/NaokiHori/SimpleVOFSolver/commits/main
 
-.. image:: https://github.com/NaokiHori/SimpleVOFSolver/blob/main/docs/source/snapshot2d.png
+.. image:: https://github.com/NaokiHori/SimpleVOFSolver/blob/main/docs/source/thumbnail.gif
    :width: 100%
 
 .. image:: https://github.com/NaokiHori/SimpleVOFSolver/blob/main/docs/source/snapshot3d.png
-   :width: 75%
+   :width: 100%
 
 ********
 Overview
