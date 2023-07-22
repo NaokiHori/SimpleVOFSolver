@@ -1,0 +1,36 @@
+name: CI
+
+on:
+
+  workflow_run:
+    workflows: [ExtractND]
+    types:
+      - completed
+
+jobs:
+
+  build:
+    name: Compile 2D and 3D sources
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dimension: [2, 3]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: "NaokiHori/SimpleVOFSolver"
+          ref: ${{ matrix.dimension }}d
+          submodules: "true"
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update && \
+          sudo apt-get -y install make libopenmpi-dev libfftw3-dev
+      - name: Modify Makefile
+        run: |
+          sed -i "s/DNDIMS=2/DNDIMS=${{ matrix.dimension }}/g" Makefile
+      - name: Compile
+        run: |
+          make all
+

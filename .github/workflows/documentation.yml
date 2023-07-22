@@ -1,0 +1,104 @@
+name: Documentation
+
+on:
+
+  push:
+    branches:
+      - main
+    pathes:
+      - include/**
+      - src/**
+      - docs/**
+      - .github/workflows/**
+
+jobs:
+
+  build-doc:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: "NaokiHori/SimpleVOFSolver"
+          ref: ${{ github.ref_name }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update && \
+          sudo apt-get -y install gnuplot ghostscript imagemagick tree
+      - name: Edit ghostscript config
+        run: |
+          sudo sed -i 's/rights="none"/rights="read|write"/g' /etc/ImageMagick-6/policy.xml
+      - name: Create eps and tex files
+        run: |
+          cd docs
+          cp create_figures/gnuplot.sh .
+          bash gnuplot.sh
+      - name: Convert eps to pdf
+        run: |
+          cd docs
+          cp create_figures/epstopdf.sh .
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            naokihori/texlive:gnuplot-epslatex \
+            /bin/sh epstopdf.sh
+      - name: Compile tex files
+        run: |
+          cd docs
+          cp create_figures/pdflatex.sh .
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            naokihori/texlive:gnuplot-epslatex \
+            /bin/sh pdflatex.sh
+      - name: Convert pdf to png
+        run: |
+          cd docs
+          sh create_figures/pdf-to-png.sh
+      - name: Build documentation using Sphinx
+        run: |
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            sphinxdoc/sphinx:latest \
+            sphinx-build -M html "docs/source" "docs/build"
+      - name: Upload HTML artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: DocHTML
+          path: docs/build/html
+
+  deploy-doc:
+    name: Deploy documentation
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: [build-doc]
+    steps:
+      - name: Download HTML artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: DocHTML
+          path: docs/build/html
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@main
+      - name: Upload HTML
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs/build/html
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
+
