@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "domain.h"
 #include "fluid.h"
 #include "fluid_solver.h"
@@ -41,4 +40,3 @@ int fluid_correct_velocity_uz(
   fluid_update_boundaries_uz(domain, &fluid->uz);
   return 0;
 }
-#endif

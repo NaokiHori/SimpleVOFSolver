@@ -25,9 +25,7 @@ typedef struct {
   double * restrict xf, * restrict xc;
   double * restrict dxf, * restrict dxc;
   double dy;
-#if NDIMS == 3
   double dz;
-#endif
 } domain_t;
 
 // constructor
