@@ -16,12 +16,9 @@ Simple VOF Solver
 .. |LastCommit| image:: https://img.shields.io/github/last-commit/NaokiHori/SimpleVOFSolver/main
 .. _LastCommit: https://github.com/NaokiHori/SimpleVOFSolver/commits/main
 
-.. image:: https://github.com/NaokiHori/SimpleVOFSolver/blob/main/docs/source/thumbnail.gif
+.. image:: https://github.com/NaokiHori/SimpleVOFSolver/blob/main/docs/source/snapshot2d.png
    :target: https://youtu.be/CpqQJxSkm7Q
    :width: 100%
-
-.. image:: https://github.com/NaokiHori/SimpleVOFSolver/blob/main/docs/source/snapshot3d.png
-   :width: 50%
 
 ********
 Overview
