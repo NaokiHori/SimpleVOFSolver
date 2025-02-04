@@ -14,15 +14,11 @@ static int compute_force_x(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   const double * restrict dxc = domain->dxc;
   const double tension = interface->tension;
   const double * restrict vof = interface->vof.data;
   const double * restrict curv = interface->curv.data;
   double * restrict ifrcx = interface->ifrcx.data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     for(int i = 2; i <= isize; i++){
       // compute surface tension force in x direction | 10
@@ -38,25 +34,6 @@ static int compute_force_x(
       IFRCX(i, j) = tension * grad * kappa;
     }
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 2; i <= isize; i++){
-        // compute surface tension force in x direction | 10
-        const double dx = DXC(i  );
-        const double grad = 1. / dx * (
-            - VOF(i-1, j  , k  )
-            + VOF(i  , j  , k  )
-        );
-        const double kappa = 0.5 * (
-            + CURV(i-1, j  , k  )
-            + CURV(i  , j  , k  )
-        );
-        IFRCX(i, j, k) = tension * grad * kappa;
-      }
-    }
-  }
-#endif
   return 0;
 }
 
@@ -66,15 +43,11 @@ static int compute_force_y(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
-  const int ksize = domain->mysizes[2];
-#endif
   const double dy = domain->dy;
   const double tension = interface->tension;
   const double * restrict vof = interface->vof.data;
   const double * restrict curv = interface->curv.data;
   double * restrict ifrcy = interface->ifrcy.data;
-#if NDIMS == 2
   for(int j = 1; j <= jsize; j++){
     for(int i = 1; i <= isize; i++){
       // compute surface tension force in y direction | 9
@@ -89,59 +62,9 @@ static int compute_force_y(
       IFRCY(i, j) = tension * grad * kappa;
     }
   }
-#else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize; i++){
-        // compute surface tension force in y direction | 9
-        const double grad = 1. / dy * (
-            - VOF(i  , j-1, k  )
-            + VOF(i  , j  , k  )
-        );
-        const double kappa = 0.5 * (
-            + CURV(i  , j-1, k  )
-            + CURV(i  , j  , k  )
-        );
-        IFRCY(i, j, k) = tension * grad * kappa;
-      }
-    }
-  }
-#endif
   return 0;
 }
 
-#if NDIMS == 3
-static int compute_force_z(
-    const domain_t * domain,
-    interface_t * interface
-){
-  const int isize = domain->mysizes[0];
-  const int jsize = domain->mysizes[1];
-  const int ksize = domain->mysizes[2];
-  const double dz = domain->dz;
-  const double tension = interface->tension;
-  const double * restrict vof = interface->vof.data;
-  const double * restrict curv = interface->curv.data;
-  double * restrict ifrcz = interface->ifrcz.data;
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize; i++){
-        // compute surface tension force in z direction | 9
-        const double grad = 1. / dz * (
-            - VOF(i  , j  , k-1)
-            + VOF(i  , j  , k  )
-        );
-        const double kappa = 0.5 * (
-            + CURV(i  , j  , k-1)
-            + CURV(i  , j  , k  )
-        );
-        IFRCZ(i, j, k) = tension * grad * kappa;
-      }
-    }
-  }
-  return 0;
-}
-#endif
 
 int interface_compute_force(
     const domain_t * domain,
@@ -149,9 +72,6 @@ int interface_compute_force(
 ){
   compute_force_x(domain, interface);
   compute_force_y(domain, interface);
-#if NDIMS == 3
-  compute_force_z(domain, interface);
-#endif
   return 0;
 }
 
