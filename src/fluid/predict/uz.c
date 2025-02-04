@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "param.h"
 #include "memory.h"
 #include "runge_kutta.h"
@@ -466,4 +465,3 @@ int predict_uz(
   }
   return 0;
 }
-#endif

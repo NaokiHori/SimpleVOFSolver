@@ -15,13 +15,11 @@ extern int compute_rhs_uy(
     const interface_t * interface
 );
 
-#if NDIMS == 3
 extern int compute_rhs_uz(
     const domain_t * domain,
     fluid_t * fluid,
     const interface_t * interface
 );
-#endif
 
 extern int compute_rhs_t(
     const domain_t * domain,
@@ -42,14 +40,12 @@ extern int predict_uy(
     fluid_t * fluid
 );
 
-#if NDIMS == 3
 extern int predict_uz(
     const domain_t * domain,
     const size_t rkstep,
     const double dt,
     fluid_t * fluid
 );
-#endif
 
 extern int predict_t(
     const domain_t * domain,

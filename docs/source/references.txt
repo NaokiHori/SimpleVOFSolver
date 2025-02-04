@@ -1,4 +1,0 @@
-.. |YOUNGS1982|  replace:: Youngs, *Numer. Methods Fluid Dyn.*, 1982
-.. |II2012|      replace:: Ii et al., *J. Comput. Phys.* (**231**), 2012
-.. |XIE2017|     replace:: Xie and Xiao, *J. Comput. Phys.* (**349**), 2017
-.. |POPINET2018| replace:: Popinet, *Annu. Rev. Fluid Mech.* (**50**), 2018

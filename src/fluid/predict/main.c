@@ -35,9 +35,7 @@ static int compute_rhs(
 ){
   compute_rhs_ux(domain, fluid, interface);
   compute_rhs_uy(domain, fluid, interface);
-#if NDIMS == 3
   compute_rhs_uz(domain, fluid, interface);
-#endif
   compute_rhs_t (domain, fluid);
   return 0;
 }
@@ -50,9 +48,7 @@ static int predict(
 ){
   predict_ux(domain, rkstep, dt, fluid);
   predict_uy(domain, rkstep, dt, fluid);
-#if NDIMS == 3
   predict_uz(domain, rkstep, dt, fluid);
-#endif
   predict_t (domain, rkstep, dt, fluid);
   return 0;
 }
@@ -75,9 +71,7 @@ int fluid_predict_field(
   // copy previous k-step source term and reset
   reset_srcs(rkstep, fluid->srcux + rk_a, fluid->srcux + rk_b, fluid->srcux + rk_g);
   reset_srcs(rkstep, fluid->srcuy + rk_a, fluid->srcuy + rk_b, fluid->srcuy + rk_g);
-#if NDIMS == 3
   reset_srcs(rkstep, fluid->srcuz + rk_a, fluid->srcuz + rk_b, fluid->srcuz + rk_g);
-#endif
   reset_srcs(rkstep, fluid->srct  + rk_a, fluid->srct  + rk_b, fluid->srct  + rk_g);
   // compute right-hand-side terms of the Runge-Kutta scheme
   compute_rhs(domain, fluid, interface);

@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "domain.h"
 #include "fluid.h"
 #include "interface.h"
@@ -49,4 +48,3 @@ int compute_flux_z(
   }
   return 0;
 }
-#endif

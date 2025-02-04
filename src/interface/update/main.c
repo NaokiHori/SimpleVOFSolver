@@ -11,9 +11,7 @@
 #include "array_macros/interface/vof.h"
 #include "array_macros/interface/flxx.h"
 #include "array_macros/interface/flxy.h"
-#if NDIMS == 3
 #include "array_macros/interface/flxz.h"
-#endif
 #include "array_macros/interface/src.h"
 
 double indicator(
@@ -24,9 +22,7 @@ double indicator(
   return 1. / (1. + exp(-2. * vofbeta * (
           + n[0] * x[0]
           + n[1] * x[1]
-#if NDIMS == 3
           + n[2] * x[2]
-#endif
           + n[NDIMS]
   )));
 }
@@ -56,32 +52,15 @@ static int interface_compute_rhs(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict dxf = domain->dxf;
   const double            dy  = domain->dy;
-#if NDIMS == 3
   const double            dz  = domain->dz;
-#endif
   const double * restrict flxx = interface->flxx.data;
   const double * restrict flxy = interface->flxy.data;
-#if NDIMS == 3
   const double * restrict flxz = interface->flxz.data;
-#endif
   double * restrict src = interface->src[rk_a].data;
   // compute right-hand-side of advection equation, x flux | 23
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      const double dx = DXF(i  );
-      SRC(i, j) += 1. / dx * (
-          + FLXX(i  , j  )
-          - FLXX(i+1, j  )
-      );
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -93,18 +72,7 @@ static int interface_compute_rhs(
       }
     }
   }
-#endif
   // compute right-hand-side of advection equation, y flux | 21
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      SRC(i, j) += 1. / dy * (
-          + FLXY(i  , j  )
-          - FLXY(i  , j+1)
-      );
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -115,8 +83,6 @@ static int interface_compute_rhs(
       }
     }
   }
-#endif
-#if NDIMS == 3
   // compute right-hand-side of advection equation, z flux | 10
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
@@ -128,7 +94,6 @@ static int interface_compute_rhs(
       }
     }
   }
-#endif
   return 0;
 }
 
@@ -140,21 +105,12 @@ static int interface_advect_vof(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   double * restrict vof = interface->vof.data;
   // update vof, alpha contribution | 19
   {
     const double coef = rkcoefs[rkstep][rk_a];
     const double * restrict src = interface->src[rk_a].data;
-#if NDIMS == 2
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize; i++){
-        VOF(i, j) += dt * coef * SRC(i, j);
-      }
-    }
-#else
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
@@ -162,19 +118,11 @@ static int interface_advect_vof(
         }
       }
     }
-#endif
   }
   // update vof, beta contribution | 19
   if(0 != rkstep){
     const double coef = rkcoefs[rkstep][rk_b];
     const double * restrict src = interface->src[rk_b].data;
-#if NDIMS == 2
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize; i++){
-        VOF(i, j) += dt * coef * SRC(i, j);
-      }
-    }
-#else
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
@@ -182,7 +130,6 @@ static int interface_advect_vof(
         }
       }
     }
-#endif
   }
   return 0;
 }
@@ -197,9 +144,7 @@ int interface_update_vof(
   reset_srcs(rkstep, interface->src + rk_a, interface->src + rk_b);
   compute_flux_x(domain, fluid, interface);
   compute_flux_y(domain, fluid, interface);
-#if NDIMS == 3
   compute_flux_z(domain, fluid, interface);
-#endif
   interface_compute_rhs(domain, interface);
   interface_advect_vof(domain, rkstep, dt, interface);
   interface_update_boundaries_vof(domain, &interface->vof);
